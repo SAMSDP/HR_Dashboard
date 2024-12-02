@@ -1,0 +1,109 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+}
+
+.container {
+    display: flex;
+}
+
+.sidebar {
+    position: fixed; /* Makes the sidebar fixed */
+    top: 0;
+    left: 0;
+    width: 19.1%; /* Adjusted width for a smaller sidebar */
+    background-color: #2c3e50;
+    color: white;
+    height: 100vh; /* Ensures it spans the full height of the viewport */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; /* Spaces out the menu and logout button */
+    padding: 20px;
+    box-sizing: border-box; /* Includes padding inside the width/height */
+}
+
+.sidebar ul {
+    list-style: none;
+    padding: 0;
+    margin: 0; /* Removes unnecessary spacing */
+}
+
+.sidebar ul li {
+    margin: 15px 0; /* Spacing between menu items */
+}
+
+.sidebar ul li a {
+    color: white;
+    text-decoration: none;
+    font-size: 16px; /* Adjusted font size */
+    display: block; /* Ensures clickable area spans full width */
+    padding: 10px;
+    border-radius: 5px;
+}
+
+.sidebar ul li a:hover {
+    background-color: #34495e;
+}
+
+
+.sidebar ul li a.active {
+    font-weight: bold;
+    text-decoration: underline;
+}
+
+.sidebar .logout {
+    background-color: #e74c3c;
+    color: white;
+    border: none;
+    padding: 10px;
+    cursor: pointer;
+    text-align: center;
+    font-size: 16px;
+    border-radius: 5px;
+}
+
+/* Main content adjustment */
+.main-content {
+    margin-left: 19%; /* Pushes the main content beside the sidebar */
+    padding: 20px;
+    width: 82%; /* Adjusts to take the remaining space */
+}
+
+/* Flex layout for top section */
+.top-section {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.gauge-chart {
+    width: 45%;
+}
+
+.attendance-card {
+    width: 45%;
+    background-color: #ecf0f1;
+    padding: 20px;
+    text-align: center;
+    border-radius: 10px;
+}
+
+.table-section {
+    margin-top: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table th, table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+
+table th {
+    background-color: #3498db;
+    color: white;
+}

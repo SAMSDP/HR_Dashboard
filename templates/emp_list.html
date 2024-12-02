@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="/static/emp_styles.css">
+</head>
+<body>
+    {% include 'sidebar.html' %}
+
+    <div class="main-content">
+        <!-- Graphs Section -->
+<div class="graphs">
+    <div id="graph1" class="graph">
+        <!-- Injected Stacked Column Chart -->
+        <div class="stacked-chart-container">
+            <h1>Stacked Column Chart of Employees</h1>
+            <canvas id="stackedChart"></canvas>
+        </div>
+    </div>
+    <div id="graph2" class="graph">
+        <!-- Injected Pie Chart -->
+        <div class="container">
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <div class="pie-chart">
+                        <svg viewBox="0 0 100 100"></svg>
+                    </div>
+                </div>
+                <div class="legend-container legend"></div>
+            </div>
+
+            <div class="header">
+                <h1>Employee Status</h1>
+            </div>
+        </div>
+    </div>
+</div>
+
+        <!-- Employee Table -->
+        <div class="table-section">
+            <div class="table-header">
+                <h2>Employee Details</h2>
+                <select id="domainFilter" onchange="filterDomain()">
+                    <option value="all">All Domains</option>
+                    {% for domain in domains %}
+                    <option value="{{ domain }}">{{ domain }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Emp ID</th>
+                        <th>Name</th>
+                        <th>Domain</th>
+                        <th>Shift</th>
+                        <th>Mobile</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for emp in employees %}
+                    <tr onclick="viewEmployee('{{ emp.employee_id }}')">
+                        <td>{{ emp.employee_id }}</td>
+                        <td>{{ emp.name }}</td>
+                        <td>{{ emp.department }}</td>
+                        <td>{{ emp.shift }}</td>
+                        <td>{{ emp.mobile }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="pagination">
+                <button {% if page == 1 %}disabled{% endif %} onclick="changePage('prev')">Previous</button>
+                <button {% if employees|length < 10 %}disabled{% endif %} onclick="changePage('next')">Next</button>
+            </div>
+        </div>
+
+        <!-- Requests Section -->
+        <div class="requests">
+            <div class="left-box">
+                <h3>Leave Requests</h3>
+                <ul>
+                    {% for req in leave_requests %}
+                    <li onclick="viewRequest('leave', '{{ req.employee_id }}')">{{ req.employee_id }} -- {{ req.emp_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <div class="right-box">
+                <h3>Permission Requests</h3>
+                <ul>
+                    {% for req in permission_requests %}
+                    <li onclick="viewRequest('permission', '{{ req.employee_id }}')">{{ req.employee_id }} -- {{ req.emp_name }}</li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Request Details</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div id="modal-body">
+                <!-- Content will load here dynamically -->
+            </div>
+            <div class="button-group">
+                <button class="accept-btn" onclick="updateRequest('accept')">Accept</button>
+                <button class="decline-btn" onclick="updateRequest('decline')">Decline</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function changePage(direction) {
+            const urlParams = new URLSearchParams(window.location.search);
+            let page = parseInt(urlParams.get('page') || 1);
+            page = direction === 'next' ? page + 1 : page - 1;
+            urlParams.set('page', page);
+            window.location.search = urlParams.toString();
+        }
+
+        function filterDomain() {
+            const domain = document.getElementById('domainFilter').value;
+            const urlParams = new URLSearchParams(window.location.search);
+            urlParams.set('domain', domain);
+            window.location.search = urlParams.toString();
+        }
+
+        function viewEmployee(empId) {
+            window.location.href = `/employee/${empId}`;
+        }
+
+        function viewRequest(type, empId) {
+            alert(`Request Type: ${type}, Employee ID: ${empId}`);
+        }
+        let currentRequestType = null;
+        let currentEmpId = null;
+
+        async function viewRequest(type, empId) {
+    currentRequestType = type;
+    currentEmpId = empId;
+
+    const response = await fetch(`/get-request-details?type=${type}&emp_id=${empId}`);
+    const data = await response.json();
+
+    if (data.success) {
+        let detailsHtml = `
+            <p>Employee ID: ${data.details.employee_id}</p>
+            <p>Employee Name: ${data.details.emp_name}</p>
+        `;
+
+        if (type === 'leave') {
+            detailsHtml += `
+                <p>Designation: ${data.details.designation}</p>
+                <p>Leave Type: ${data.details.leave_type}</p>
+                <p>Start Date: ${data.details.start_date}</p>
+                <p>End Date: ${data.details.end_date}</p>
+            `;
+        } else if (type === 'permission') {
+            detailsHtml += `
+                <p>Department: ${data.details.department}</p>
+                <p>Permission Type: ${data.details.type_of_absence}</p>
+                <p>Start Time: ${data.details.start_time}</p>
+                <p>End Time: ${data.details.end_time}</p>
+            `;
+        }
+
+        detailsHtml += `<p>Reason: ${data.details.reason}</p>`;
+
+        document.getElementById('modal-body').innerHTML = detailsHtml;
+        document.getElementById('modal').style.display = 'flex';
+        document.querySelector('.main-content').classList.add('blurred');
+    } else {
+        alert('Failed to fetch request details');
+    }
+}
+
+
+        async function updateRequest(action) {
+            const response = await fetch(`/update-request`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ type: currentRequestType, emp_id: currentEmpId, action: action })
+            });
+
+            const result = await response.json();
+            if (result.success) {
+                alert(`Request ${action}ed successfully!`);
+                closeModal();
+                location.reload();
+            } else {
+                alert('Failed to update request');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            document.querySelector('.main-content').classList.remove('blurred');
+        }
+
+        // Fetch data from the backend
+        async function fetchData() {
+            const response = await fetch('http://127.0.0.1:5000/data');
+            const data = await response.json();
+            return data;
+        }
+
+        class PieChart {
+            constructor(data) {
+                this.data = data;
+                this.svg = document.querySelector('.pie-chart svg');
+                this.legend = document.querySelector('.legend');
+                this.total = data.reduce((sum, item) => sum + item.value, 0);
+                this.progress = 0;
+                this.animationId = null;
+            }
+
+            // Create slice path without the fade animation
+            createSlice(startAngle, endAngle, color) {
+                const centerX = 50, centerY = 50, radius = 45;
+                const startRad = (startAngle - 90) * (Math.PI / 180);
+                const endRad = (endAngle - 90) * (Math.PI / 180);
+                const x1 = centerX + radius * Math.cos(startRad);
+                const y1 = centerY + radius * Math.sin(startRad);
+                const x2 = centerX + radius * Math.cos(endRad);
+                const y2 = centerY + radius * Math.sin(endRad);
+                const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+                return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            }
+
+            render() {
+                this.svg.innerHTML = ''; // Clear previous slices if any
+                let currentAngle = 0;
+
+                this.data.forEach((item, index) => {
+                    const sliceAngle = (item.value / this.total) * 360; // Calculate the angle for the slice
+                    const startAngle = currentAngle;
+                    currentAngle += sliceAngle; // Update the current angle for the next slice
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', this.createSlice(startAngle, currentAngle, item.color)); // Create the slice path
+                    path.setAttribute('fill', item.color); // Set the color of the slice
+                    path.classList.add('slice'); // Add class for possible styling or animations
+
+                    // Initial slice angle is set to 0, and we will animate it to the final angle
+                    path.style.transform = `rotate(${startAngle}deg)`; // Start angle
+                    path.style.transition = 'transform 1s ease-out'; // Set animation duration and easing
+
+                    // Add event listeners to handle hover effect for both slice and legend item
+                    path.addEventListener('mouseenter', () => this.highlightSlice(index));
+                    path.addEventListener('mouseleave', () => this.removeHighlight(index));
+
+                    this.svg.appendChild(path); // Append the slice to the SVG element
+
+                    // Animate the slice from 0° to its final angle after appending it
+                    setTimeout(() => {
+                        path.style.transform = `rotate(${currentAngle}deg)`; // Animate to final angle
+                    }, 100); // A slight delay before the animation starts
+                });
+            }
+
+            createLegend() {
+                this.legend.innerHTML = '';
+                this.data.forEach((item, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.classList.add('legend-item');
+                    legendItem.innerHTML = ` 
+                        <div class="legend-color" style="background-color: ${item.color}"></div>
+                        <div class="legend-text">
+                            <div class="legend-label">${item.label}</div>
+                            <div class="legend-value">${item.value}</div>
+                        </div>
+                    `;
+                    
+                    // Add event listeners to handle hover effect for both slice and legend item
+                    legendItem.addEventListener('mouseenter', () => this.highlightSlice(index));
+                    legendItem.addEventListener('mouseleave', () => this.removeHighlight(index));
+
+                    this.legend.appendChild(legendItem);
+                });
+            }
+
+            highlightSlice(index) {
+                const slice = this.svg.querySelectorAll('.slice')[index];
+                const legendItem = this.legend.querySelectorAll('.legend-item')[index];
+
+                slice.classList.add('highlighted');
+                legendItem.classList.add('highlighted');
+            }
+
+            removeHighlight(index) {
+                const slice = this.svg.querySelectorAll('.slice')[index];
+                const legendItem = this.legend.querySelectorAll('.legend-item')[index];
+
+                slice.classList.remove('highlighted');
+                legendItem.classList.remove('highlighted');
+            }
+
+            init() {
+                this.createLegend();
+                this.render();
+            }
+        }
+
+        // Initialize the chart
+        document.addEventListener('DOMContentLoaded', async () => {
+            const data = await fetchData();
+            const chart = new PieChart(data);
+            chart.init();
+        });
+
+        document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById("stackedChart").getContext("2d");
+
+    // Fetch data from the Flask backend
+    fetch("/datas")
+        .then((response) => response.json())
+        .then((data) => {
+            const chart = new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.ages,
+                    datasets: [
+                        {
+                            label: "Male",
+                            data: data.male_counts,
+                            backgroundColor: "rgba(54, 162, 235, 0.7)",
+                        },
+                        {
+                            label: "Female",
+                            data: data.female_counts,
+                            backgroundColor: "rgba(255, 99, 132, 0.7)",
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: "top",
+                        },
+                    },
+                    scales: {
+                        x: {
+                            stacked: true,
+                        },
+                        y: {
+                            stacked: true,
+                        },
+                    },
+                },
+            });
+        })
+        .catch((error) => console.error("Error fetching data:", error));
+});
+    </script>
+</body>
+</html>

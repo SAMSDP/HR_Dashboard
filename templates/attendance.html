@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Today's Attendance</title>
+    <link rel="stylesheet" href="/static/att_styles.css">
+    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
+    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js"></script>
+</head>
+<body>
+    <div class="container">
+        {% include 'sidebar.html' %}
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h1>Present Today</h1>
+
+            <!-- Gauge Chart Section -->
+            <div class="top-section">
+                <div class="gauge-chart" style="width: 300px; height: 300px; margin: auto;">
+                    <canvas id="attendanceGauge"></canvas>
+                </div>
+                <div id="attendanceText" style="text-align: center; font-size: 1.2rem; margin-top: 10px;">
+                    Fetching attendance data...
+                </div>
+            </div>
+
+            <!-- Last Logged-In Table Section -->
+            <div class="table-section">
+                <h2>Last 10 Employees Logged In</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Emp ID</th>
+                            <th>Emp Name</th>
+                            <th>Domain</th>
+                            <th>Login Time</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for emp in last_logged_in %}
+                        <tr>
+                            <td>{{ emp.emp_id }}</td>
+                            <td>{{ emp.name }}</td>
+                            <td>{{ emp.domain }}</td>
+                            <td>{{ emp.login_time }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Gauge Chart Script -->
+    <script>
+// Initialize the gauge chart
+const ctx = document.getElementById('attendanceGauge').getContext('2d');
+const gaugeChart = new Chart(ctx, {
+    type: 'gauge',
+    data: {
+        labels: ['Present'],
+        datasets: [{
+            value: 0, // Initial attendance value (this will be dynamic)
+            data: [0, 100], // The range of the gauge chart (0 to 100), adjust as needed
+            backgroundColor: ["green", "gray"], // Green section for attendance and gray for non-attendance
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        needle: {
+            radiusPercentage: 2, // Needle size
+            widthPercentage: 3,
+            lengthPercentage: 80,
+            color: 'black' // Needle color
+        },
+        valueLabel: {
+            display: false // Disable the black value label bar
+        },
+        layout: {
+            padding: {
+                top: 20,
+                bottom: 20
+            }
+        },
+        plugins: {
+            datalabels: {
+                display: false // Hide labels inside the chart
+            }
+        }
+    }
+});
+
+
+        // Update the gauge dynamically
+        function updateGauge(loggedIn, totalEmployees) {
+            const percentage = (loggedIn / totalEmployees) * 50; // Calculate percentage
+            gaugeChart.data.datasets[0].data = [percentage, 100 - percentage];
+            gaugeChart.data.datasets[0].value = loggedIn; // Update logged-in value
+            gaugeChart.update();
+
+            // Update attendance text
+            document.getElementById('attendanceText').textContent = `${loggedIn} of ${totalEmployees} Employees Logged In`;
+        }
+
+        // Fetch attendance data
+        function fetchAttendance() {
+            fetch('/today-attendance')
+                .then(response => response.json())
+                .then(data => {
+                    const { loggedIn, totalEmployees } = data;
+                    updateGauge(loggedIn, totalEmployees);
+                })
+                .catch(error => {
+                    console.error("Error fetching attendance data:", error);
+                    document.getElementById('attendanceText').textContent = "Error fetching attendance data";
+                });
+        }
+
+        // Poll for updates every 5 seconds
+        setInterval(fetchAttendance, 5000);
+        fetchAttendance(); // Initial fetch
+    </script>
+</body>
+</html>

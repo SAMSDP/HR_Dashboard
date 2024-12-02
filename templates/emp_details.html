@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee Details</title>
+    <link rel="stylesheet" href="/static/emp_styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <div class="sidebar">
+            <ul>
+                <li><a href="/dashboard">Dashboard</a></li>
+                <li><a href="/today-attendance">Today's Attendance</a></li>
+                <li><a href="/employees_list">Employees List</a></li>
+                <li><a href="/scheduling_meeting">Scheduling Meeting</a></li>
+            </ul>
+            <button class="logout">Logout</button>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <h2>Employee Details</h2>
+            <form id="employeeForm">
+                <!-- Personnel Information -->
+                <div class="section">
+                    <h3>Personnel Information</h3>
+                    <label>Employee ID: </label>
+                    <input type="text" name="emp_id" value="{{ employee.employee_id }}" readonly><br>
+                    <label>Name: </label>
+                    <input type="text" name="name" value="{{ employee.name }}" disabled><br>
+                    <label>Date of Birth: </label>
+                    <input type="date" name="dob" value="{{ employee.dob }}" disabled><br>
+                    <label>Gender: </label>
+                    <input type="text" name="gender" value="{{ employee.gender }}" disabled><br>
+                    <label>Mobile Number: </label>
+                    <input type="text" name="mobile" value="{{ employee.mobile }}" disabled><br>
+                    <label>Email Address: </label>
+                    <input type="email" name="email" value="{{ employee.email }}" disabled><br>
+                    <label>Emergency Contact Number: </label>
+                    <input type="text" name="emergency_contact" value="{{ employee.emergency_contact }}" disabled><br>
+                    <label>Current Address: </label>
+                    <textarea name="current_address" disabled>{{ employee.current_address }}</textarea><br>
+                    <label>Permanent Address: </label>
+                    <textarea name="permanent_address" disabled>{{ employee.permanent_address }}</textarea><br>
+                </div>
+
+                <!-- Professional Information -->
+                <div class="section">
+                    <h3>Professional Information</h3>
+                    <label>Designation: </label>
+                    <input type="text" name="designation" value="{{ employee.designation }}" disabled><br>
+                    <label>Department: </label>
+                    <input type="text" name="department" value="{{ employee.department }}" disabled><br>
+                </div>
+
+                <!-- Administrative Information -->
+                <div class="section">
+                    <h3>Administrative Information</h3>
+                    <label>Account Number: </label>
+                    <input type="text" name="account_number" value="{{ employee.account_number }}" disabled><br>
+                    <label>Bank Name: </label>
+                    <input type="text" name="bank_name" value="{{ employee.bank_name }}" disabled><br>
+                    <label>IFSC Code: </label>
+                    <input type="text" name="ifsc_code" value="{{ employee.ifsc_code }}" disabled><br>
+                    <label>PAN Number: </label>
+                    <input type="text" name="pan_number" value="{{ employee.pan_number }}" disabled><br>
+                </div>
+
+                <!-- Buttons -->
+                <button type="button" id="editButton">Edit</button>
+                <button type="submit" id="updateButton" disabled>Update</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- JavaScript -->
+    <script>
+        const editButton = document.getElementById("editButton");
+        const updateButton = document.getElementById("updateButton");
+        const formInputs = document.querySelectorAll("#employeeForm input, #employeeForm textarea");
+
+        // Enable editing on click
+        editButton.addEventListener("click", () => {
+            formInputs.forEach(input => input.disabled = false);
+            updateButton.disabled = false;
+        });
+    </script>
+</body>
+</html>

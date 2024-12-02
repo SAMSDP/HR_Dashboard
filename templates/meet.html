@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/static/meet.css">
+  <link href="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.css" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/fullcalendar@5.10.2/main.min.js"></script>
+  <title>Schedule Meet</title>
+</head>
+<body>
+
+  {% include 'sidebar.html' %}
+
+  <div class="container">
+    <div class="flex-container">
+      <!-- Upcoming Meetings -->
+      <div class="upcoming-meetings">
+        <h2>Upcoming Meetings</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Name</th>
+              <th>TIming</th>
+              <th>Meet URL</th>
+            </tr>
+          </thead>
+          <tbody id="meetings">
+            {% for meeting in upcoming_meetings %}
+            <tr onclick="showMeetingDetails('{{ meeting.id }}')" data-meeting="{{ meeting | tojson | safe }}">
+              <td>{{ meeting.date }}</td>
+              <td>{{ meeting.name }}</td>
+              <td>{{ meeting.start_time}}</td>
+              <td><a href="{{ meeting.meet_url }}"target ="_blank">Click Here</a></td>
+            </tr>
+            {% else %}
+            <tr><td colspan="3">No upcoming meetings available</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Meeting Details Modal -->  
+<div id="meeting-details-modal" class="modal">
+  <div class="modalcontent">
+    <span class="close-modal">&times;</span> <!-- Close button -->
+    <h3 id="modal-meeting-name"></h3>
+    <p><strong>Date:</strong> <span id="modal-meeting-date"></span></p>
+    <p><strong>Start Time:</strong> <span id="modal-meeting-start"></span></p>
+    <p><strong>End Time:</strong> <span id="modal-meeting-end"></span></p>
+    <p><strong>Location:</strong> <span id="modal-meeting-location"></span></p>
+    <p><strong>Meeting URL:</strong> <a id="modal-meeting-url" href="#" target="_blank">Click Here</a></p>
+  </div>
+</div>
+
+
+      <!--Modal Section-->
+      <div id="event-details-modal" class="modal-overlay">
+        <div class="modal-content">
+          <span class="close">&times;</span> <!-- Close button -->
+          <div class="modal-body"></div> <!-- Modal body where event details are inserted -->
+        </div>
+      </div>
+      
+
+      <!-- Calendar Section -->
+      <div id="calendar-container">
+        <h2>Meeting Calendar</h2>
+        <div id="calendar"></div>
+      </div>
+    </div>
+  </div>
+  <!-- Add Event Modal -->
+<div id="add-event-modal" class="modal-overlay">
+  <div class="modal_content">
+    <span class="close-modal">&times;</span>
+    <h3>Manage Events for <span id="event-date-label"></span></h3>
+    <div class="event-list">
+      <!-- Existing events will be loaded here -->
+    </div>
+    <hr>
+    <h4>Add New Event</h4>
+    <form id="add-event-form">
+      <input type="hidden" id="event-date" name="date">
+      <label>Event Name:</label>
+      <input type="text" name="name" required><br>
+      <label>Location:</label>
+      <input type="text" name="location" required><br>
+      <label>Start Time:</label>
+      <input type="time" name="start_time" required><br>
+      <label>End Time:</label>
+      <input type="time" name="end_time" required><br>
+      <label>Meeting URL:</label>
+      <input type="text" name="meet_url"><br>
+      <button type="submit">Add Event</button>
+    </form>
+  </div>
+</div>
+
+
+  <!-- Meeting Feedback Section -->
+  <div class="feedback-section">
+    {% for feedback in feedbacks %}
+    <div class="feedback-tile">
+      <div class="feedback-title">{{ feedback.name }} - {{ feedback.date }}</div>
+      <div class="feedback-content">
+        <span>{{ feedback.feedback }}</span>
+        <span class="employee-name">{{ feedback.employee_name }}</span>
+      </div>
+    </div>
+    {% else %}
+    <p>No feedbacks available</p>
+    {% endfor %}
+  </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+  var closeButton = document.querySelector('#event-details-modal .close');
+
+if (closeButton) {
+  closeButton.addEventListener('click', function () {
+    console.log('Close button clicked'); // Log to confirm event is triggered
+    var modal = document.getElementById('event-details-modal');
+    modal.style.display = 'none'; // Hide the modal
+  });
+} else {
+  console.error('Close button not found!');
+}
+
+  // Optional: Close the modal if the user clicks outside the modal content
+  document.getElementById('event-details-modal').addEventListener('click', function (e) {
+    if (e.target === document.getElementById('event-details-modal')) {
+      closeModal(); // Close modal if clicked outside of modal content
+    }
+  });
+
+  // Initialize the calendar
+  var calendar = new FullCalendar.Calendar(document.getElementById('calendar'), {
+    initialView: 'dayGridMonth',
+    height: 300, // Set calendar height to be compact
+    contentHeight: 'auto',
+    events: function (fetchInfo, successCallback, failureCallback) {
+      fetch('/events?start=' + fetchInfo.startStr + '&end=' + fetchInfo.endStr)
+        .then(response => response.json())
+        .then(data => {
+          successCallback(data);
+        })
+        .catch(failureCallback);
+    },
+    headerToolbar: {
+      left: 'prev,next',
+      center: 'title',
+      right: 'today'
+    },
+    buttonText: {
+      today: 'Today',
+    },
+    eventDidMount: function (info) {
+      var eventDate = info.event.start.toISOString().split('T')[0];
+      var dateCell = document.querySelector(`[data-date="${eventDate}"]`);
+      if (dateCell) {
+        dateCell.classList.add('highlighted');
+      }
+    },
+    // Customize the display of events in the date cell
+    eventContent: function (arg) {
+      return {
+        html: `<span class="fc-event-title">${arg.event.title}</span>`
+      };
+    },
+    dateClick: function(info) {
+      showAddEventModal(info.dateStr);
+    },
+    eventClick: function (info) {
+        // Prevent the default behavior (redirection)
+        info.jsEvent.preventDefault();
+
+      var meetingDetails = `
+        <h3>${info.event.title}</h3>
+        <p><strong>Location:</strong> ${info.event.extendedProps.location}</p>
+        <p><strong>Start:</strong> ${info.event.start.toLocaleString()}</p>
+        <p><strong>End:</strong> ${info.event.end.toLocaleString()}</p>
+        <p><strong>Join Link:</strong> <a href="${info.event.url}" target="_blank">Join Meeting</a></p>`;
+
+      var modal = document.getElementById('event-details-modal');
+      if (modal) {
+        modal.querySelector('.modal-body').innerHTML = meetingDetails;
+        modal.style.display = 'block'; // Show the modal
+      } else {
+        console.error('Modal element not found');
+      }
+    },
+  });
+
+  // Render the calendar
+  calendar.render();
+
+    // Show the Add Event Modal
+    function showAddEventModal(date) {
+    const modal = document.getElementById('add-event-modal');
+    modal.querySelector('#event-date').value = date;
+    modal.style.display = 'block';
+    fetchEventsForDate(date); // Load events for that day
+  }
+
+// Fetch events for the selected date
+// Fetch events for the selected date
+function fetchEventsForDate(date) {
+  fetch(`/get_events_for_date?date=${date}`)
+    .then(response => response.json())
+    .then(data => {
+      const eventListContainer = document.querySelector('.event-list');
+      eventListContainer.innerHTML = ''; // Clear previous events
+
+      if (data.length === 0) {
+        eventListContainer.innerHTML = '<p>No Meetings Today</p>';
+      } else {
+        data.forEach(event => {
+          const eventItem = document.createElement('div');
+          eventItem.classList.add('event-item');
+
+          const deleteBtn = document.createElement('button');
+          deleteBtn.classList.add('delete-btn');
+          deleteBtn.textContent = 'Delete';
+          
+          // Add event listener to delete button
+          deleteBtn.addEventListener('click', function() {
+            deleteEvent(event.id);
+          });
+
+          eventItem.innerHTML = `<span>${event.name}</span>`;
+          eventItem.appendChild(deleteBtn);
+
+          eventListContainer.appendChild(eventItem);
+        });
+      }
+    })
+    .catch(error => {
+      console.error('Error fetching events:', error);
+    });
+}
+  // Add Event Form Submission
+  document.getElementById('add-event-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    const formData = new FormData(e.target);
+    fetch('/add_event', {
+      method: 'POST',
+      body: formData
+    }).then(response => {
+      if (response.ok) {
+        calendar.refetchEvents(); // Refresh calendar events
+        closeAddEventModal();
+      }
+    });
+  });
+
+// Delete event
+function deleteEvent(eventId) {
+  fetch(`/delete_event?id=${eventId}`, { method: 'DELETE' })
+    .then(response => response.json())
+    .then(data => {
+      if (data.success) {
+        alert('Event deleted successfully!');
+        fetchEventsForDate(new Date().toISOString().split('T')[0]); // Refresh events after deletion
+      } else {
+        alert('Failed to delete event.');
+      }
+    })
+    .catch(error => {
+      console.error('Error deleting event:', error);
+      alert('Error occurred while deleting event.');
+    });
+}
+
+
+  // Close Modal
+  document.querySelectorAll('.close-modal').forEach(btn => {
+    btn.addEventListener('click', closeAddEventModal);
+  });
+
+  function closeAddEventModal() {
+    document.getElementById('add-event-modal').style.display = 'none';
+  }
+
+  var closeButton = document.querySelector('#meeting-details-modal .close-modal');
+
+if (closeButton) {
+  closeButton.addEventListener('click', function () {
+    console.log('Close button clicked'); // Log to confirm event is triggered
+    var modal = document.getElementById('meeting-details-modal');
+    modal.classList.remove('active'); // Remove 'active' class to hide the modal
+  });
+} else {
+  console.error('Close button not found!');
+}
+
+
+
+    // Load Upcoming Meetings on page load
+    fetchUpcomingMeetings();
+
+    function fetchUpcomingMeetings() {
+        fetch('/upcoming_meetings') // Endpoint to fetch upcoming meetings
+            .then(response => response.json())
+            .then(data => {
+                renderUpcomingMeetings(data);
+            })
+            .catch(error => console.error('Error fetching upcoming meetings:', error));
+    }
+
+    function renderUpcomingMeetings(meetings) {
+        var tbody = document.getElementById('meetings');
+        tbody.innerHTML = ''; // Clear previous data
+        if (meetings.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="3">No upcoming meetings available</td></tr>';
+            return;
+        }
+        meetings.forEach(meeting => {
+            var tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${meeting.date}</td>
+                <td>${meeting.name}</td>
+                <td>${meeting.start_time}</td>
+                <td><a href="${meeting.meet_url}" target="_blank">Click Here</a></td>
+            `;
+            tr.addEventListener('click', function() {
+      showMeetingDetails(meeting);
+    });
+
+    tbody.appendChild(tr);
+  });
+}
+
+    function showMeetingDetails(meeting) {
+  document.getElementById('modal-meeting-name').innerText = meeting.name;
+  document.getElementById('modal-meeting-date').innerText = meeting.date;
+  document.getElementById('modal-meeting-start').innerText = meeting.start_time;
+  document.getElementById('modal-meeting-end').innerText = meeting.end_time;
+  document.getElementById('modal-meeting-location').innerText = meeting.location;
+  document.getElementById('modal-meeting-url').innerText = meeting.url;
+  var meetingUrlElement = document.getElementById('modal-meeting-url');
+  meetingUrlElement.innerText = meeting.meet_url;
+  meetingUrlElement.href = meeting.meet_url;
+
+  // Show the modal
+  document.getElementById('meeting-details-modal').classList.add('active');
+}
+ 
+
+    // Function to shuffle the feedbacks (randomize them on each refresh)
+    function shuffleFeedbacks(feedbacks) {
+        for (let i = feedbacks.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [feedbacks[i], feedbacks[j]] = [feedbacks[j], feedbacks[i]]; // Swap elements
+        }
+    }
+
+    // Display 3 feedbacks at a time
+    let feedbacks = document.querySelectorAll(".feedback-tile");
+    const feedbacksPerPage = 3;  // Display 3 feedbacks at a time
+    let currentFeedbackIndex = 0;
+
+    // Shuffle feedbacks to show a different set on each refresh
+    shuffleFeedbacks(feedbacks);
+
+    // Function to show the feedbacks in blocks of 3
+    function showFeedbacks() {
+        // Hide all feedbacks
+        feedbacks.forEach(feedback => feedback.style.display = "none");
+
+        // Show the next 3 feedbacks
+        for (let i = currentFeedbackIndex; i < currentFeedbackIndex + feedbacksPerPage; i++) {
+            if (feedbacks[i]) {
+                feedbacks[i].style.display = "block";
+            }
+        }
+
+        // Update the index for the next cycle
+        currentFeedbackIndex = (currentFeedbackIndex + feedbacksPerPage) % feedbacks.length;
+    }
+
+    // Initialize feedback display
+    showFeedbacks();
+
+    // Rotate feedback every 10 seconds
+    setInterval(showFeedbacks, 3000); // Change feedback every 10 seconds
+});
+
+
+</script>
+
+</body>
+</html>
