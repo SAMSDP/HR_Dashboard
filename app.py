@@ -34,6 +34,316 @@ def format_time(time_obj):
 # -------------------- Route: Home --------------------
 
 @app.route('/')
+@app.route('/dashboard')
+def dashboard():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # 1. Total Employees
+        cursor.execute("SELECT COUNT(*) as total_employees FROM employee")
+        total_employees = cursor.fetchone()['total_employees']
+
+        # 2. Leaves This Month
+        current_month = datetime.now().month
+        cursor.execute("""
+            SELECT COUNT(*) as total_leaves 
+            FROM leave_requests 
+            WHERE MONTH(start_date) = %s
+        """, (current_month,))
+        total_leaves = cursor.fetchone()['total_leaves']
+
+        # 3. New Employees This Month
+        cursor.execute("""
+        SELECT COUNT(*) as new_employees
+        FROM employee
+        WHERE employee_id >= (
+            SELECT COALESCE(MAX(employee_id), 0) 
+            FROM employee
+            WHERE DATE_SUB(CURDATE(), INTERVAL 1 MONTH) <= CURDATE()
+        )
+        """)
+        new_employees = cursor.fetchone()['new_employees']
+
+        # 4. Women Ratio
+        cursor.execute("SELECT COUNT(*) as total_women FROM employee WHERE gender = 'Female'")
+        total_women = cursor.fetchone()['total_women']
+        women_ratio = round((total_women / total_employees) * 100, 2)
+
+        # Close the connection
+        connection.close()
+
+        # Pass data to the dashboard
+        return render_template('dashboard.html', 
+            total_employees=total_employees, 
+            total_leaves=total_leaves,
+            new_employees=new_employees,
+            women_ratio=women_ratio
+        )
+
+    except Exception as e:
+        print(f"Error fetching data: {e}")
+        return "Error loading dashboard"
+    
+@app.route('/today-attendance', methods=['GET'])
+def gettoday_attendance():
+    connection = get_db_connection()
+    cursor = connection.cursor()
+
+    try:
+        # Query to count today's attendance
+        cursor.execute("SELECT COUNT(*) FROM attendance WHERE DATE(login_time) = CURDATE()")
+        logged_in = cursor.fetchone()[0]
+
+        # Query to count the total number of employees
+        cursor.execute("SELECT COUNT(*) FROM employee")
+        total_employees = cursor.fetchone()[0]
+    finally:
+        # Ensure proper cleanup
+        cursor.close()
+        connection.close()
+
+    # Return JSON response with both logged-in and total employees
+    return jsonify({
+        'loggedIn': logged_in,
+        'totalEmployees': total_employees
+    })
+
+@app.route('/get_funnel_chart_data')
+def get_funnel_chart_data():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Query the database for hiring and termination data
+        cursor.execute("SELECT month, num_hirings AS hirings, num_terminations AS terminations FROM hiring")
+        data = cursor.fetchall()
+
+        cursor.close()
+        connection.close()
+
+        return jsonify(data)
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/salary-data', methods=['GET'])
+def get_salary_data():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor(dictionary=True)
+
+        # Query all salary distribution data
+        cursor.execute("SELECT department, entry_level, junior, mid_level, senior, leader, manager FROM salary_distribution")
+        salary_data = cursor.fetchall()
+
+        # Prepare the response data
+        labels = ["Entry Level", "Junior", "Mid-Level", "Senior", "Leader", "Manager"]
+        series = []
+
+        # For each department, add the salary values to the series
+        for department in salary_data:
+            series.append({
+                "name": department['department'],
+                "data": [
+                    department['entry_level'],
+                    department['junior'],
+                    department['mid_level'],
+                    department['senior'],
+                    department['leader'],
+                    department['manager']
+                ]
+            })
+
+        # Close the cursor and connection
+        cursor.close()
+        connection.close()
+
+        # Return the data as JSON
+        return jsonify({
+            "labels": labels,
+            "series": series
+        })
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+    
+
+@app.route('/data', methods=['GET'])
+def getchart_data():
+    db = get_db_connection()
+    cursor = db.cursor(dictionary=True)
+    
+    # Query to Count Statuses
+    query = """
+    SELECT status, COUNT(*) as count 
+    FROM employee 
+    GROUP BY status
+    """
+    cursor.execute(query)
+    results = cursor.fetchall()
+    db.close()
+    
+    # Map Status to Colors
+    color_map = {
+        'Intern': '#FF6B6B',
+        'Permanent': '#4ECDC4',
+        'Temporary': '#45B7D1'
+    }
+
+    # Format the Data for the Frontend
+    chart_data = [
+        {'label': row['status'], 'value': row['count'], 'color': color_map[row['status']]} 
+        for row in results
+    ]
+    
+    return jsonify(chart_data)
+
+
+@app.route('/get-attendance-data')
+def get_attendance_data():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Correct table name: attendance
+        cursor.execute("SELECT month, attendance_percentage FROM attendance_percentage")
+        result = cursor.fetchall()
+
+        # Close the connection
+        connection.close()
+
+        # Convert the result into a dictionary
+        attendance_data = {row[0]: row[1] for row in result}
+
+        # Return the data as a JSON response
+        return jsonify(attendance_data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+
+    
+# Add cache control headers
+@app.after_request
+def add_cache_control(response):
+    response.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
+    response.headers['Pragma'] = 'no-cache'
+    response.headers['Expires'] = '0'
+    return response
+
+@app.route('/get-working-format')
+def get_working_format():
+    try:
+        # Establish the database connection
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        # Query to fetch format and percentage from the working_format table
+        cursor.execute("SELECT format, percentage FROM working_format")
+        result = cursor.fetchall()
+        print(result)
+
+        # Close the connection
+        connection.close()
+
+        # Convert the result into a dictionary
+        working_format_data = {row[0]: row[1] for row in result}
+        print(working_format_data)
+
+        # Return the data as JSON
+        return jsonify(working_format_data)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
+    
+
+@app.route('/datas')
+def getdata():
+    # Connect to the database
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+
+    # Query to fetch age, count, and gender
+    query = """
+        SELECT age, gender, COUNT(*) as count
+        FROM employee
+        GROUP BY age, gender
+        ORDER BY age ASC;
+    """
+    cursor.execute(query)
+    results = cursor.fetchall()
+    print(results)
+
+    # Structure data for Chart.js
+    data = {}
+    for row in results:
+        age = row['age']
+        gender = row['gender']
+        count = row['count']
+        if age not in data:
+            data[age] = {"Male": 0, "Female": 0}
+        data[age][gender] = count
+
+
+    # Convert to JSON-friendly format
+    chart_data = {
+        "ages": list(data.keys()),
+        "male_counts": [data[age]["Male"] for age in data],
+        "female_counts": [data[age]["Female"] for age in data],
+    }
+
+    cursor.close()
+    connection.close()
+    print(chart_data)
+
+    return jsonify(chart_data)
+
+
+@app.route('/dat')
+def fetch_data():
+    connection = get_db_connection()
+    cursor = connection.cursor(dictionary=True)
+    
+   
+    query = """
+    SELECT 
+        CASE
+            WHEN location LIKE '%North%' THEN 'North Chennai'
+            WHEN location LIKE '%South%' THEN 'South Chennai'
+            WHEN location LIKE '%East%' THEN 'East Chennai'
+            WHEN location LIKE '%West%' THEN 'West Chennai'
+            ELSE 'Other'
+        END AS grouped_location,
+        SUM(male_count) AS total_male_count,
+        SUM(female_count) AS total_female_count,
+        SUM(other_count) AS total_other_count
+    FROM emp_locations
+    GROUP BY grouped_location
+    ORDER BY FIELD(grouped_location, 'North Chennai', 'South Chennai', 'East Chennai', 'West Chennai', 'Other');
+    """
+    
+    
+    cursor.execute(query)
+    data = cursor.fetchall()
+    
+    
+    cursor.close()
+    connection.close()
+    
+    
+    locations = [row['grouped_location'] for row in data]
+    male_counts = [row['total_male_count'] for row in data]
+    female_counts = [row['total_female_count'] for row in data]
+    other_counts = [row['total_other_count'] for row in data]
+    
+    return jsonify({
+        "locations": locations,
+        "male_counts": male_counts,
+        "female_counts": female_counts,
+        "other_counts": other_counts
+    })
+
+
 @app.route('/attendance')
 def attendance():
     connection = get_db_connection()
@@ -41,7 +351,7 @@ def attendance():
 
     # Fetch the last 10 employees who logged in
     query_last_logged_in = """
-        SELECT emp_id, name, domain, login_time
+        SELECT emp_id, name, domain, login_time, timing
         FROM attendance
         ORDER BY login_time DESC
         LIMIT 10;

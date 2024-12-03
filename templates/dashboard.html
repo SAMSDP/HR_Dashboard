@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard</title>
+    <link rel="stylesheet" href="/static/dashboard.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@0.7.0"></script>       
+    <script src="https://unpkg.com/chart.js@2.8.0/dist/Chart.bundle.js"></script>
+    <script src="https://unpkg.com/chartjs-gauge@0.3.0/dist/chartjs-gauge.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
+</head>
+<body>
+
+    {% include 'sidebar.html' %}
+
+    <div class="dashboard-container">
+
+        <h1>General Dashboard</h1>
+
+        <!-- Top Cards -->
+        <div class="top-cards">
+            <div class="card">
+                <h3>Total Employees</h3>
+                <p id="total-employees">{{ total_employees }}</p>
+            </div>
+            <div class="card">
+                <h3>Leaves This Month</h3>
+                <p id="total-leaves">{{ total_leaves }}</p>
+            </div>
+            <div class="card">
+                <h3>New Employees This Month</h3>
+                <p id="new-employees">{{ new_employees }}</p>
+            </div>
+            <div class="card">
+                <h3>Women Ratio</h3>
+                <p id="women-ratio">{{ women_ratio }}%</p>
+            </div>
+        </div>
+
+        <!-- Gauge Chart Section -->
+        <div class="top-section">
+            <div class="gauge-chart" style="width: 600px; height: 300px; margin-top: auto; margin-bottom: 50px;">
+                <canvas id="attendanceGauge"></canvas>
+            </div>
+            <div id="attendanceText" style="font-size: 1.7rem; margin-top: 150px; margin-right: 150px;">
+                Fetching attendance data...
+            </div>
+        </div>
+
+        <div class="funnel-section">
+            <!-- Hiring Ratio Card (Now on the Left) -->
+            <div class="attendance-card">
+                <h3>Hiring vs Termination Ratio</h3>
+                <p id="hiringRatioText">Fetching ratio data...</p>
+            </div>
+        
+            <!-- Funnel Chart (Now on the Right) -->
+            <div class="chart-container">
+                <canvas id="funnelChart"></canvas>
+            </div>
+        </div>
+        
+
+
+        <!-- Line Chart Section -->
+        <div class="line-chart-card">
+            <div class="card-content">
+                <h3>Salary Distribution</h3>
+                <div id="salary-chart"></div>
+            </div>
+        </div>
+
+
+        <!-- Pie Chart -->
+        <div class="container">
+            <div class="chart-wrapper">
+                <div class="chart-container">
+                    <div class="pie-chart">
+                        <svg viewBox="0 0 100 100"></svg>
+                    </div>
+                </div>
+                <div class="legend-container legend"></div>
+            </div>
+        
+            <div class="header">
+                <h1>Employee Status</h1>
+            </div>
+        </div>
+        
+
+        <!-- Horizontal Bar Chart -->
+        <h1>Monthly Attendance</h1>
+        <div id="chart-container">
+            <canvas id="attendanceChart"></canvas>
+        </div>
+
+        <!-- Donut Chart -->
+        <h1>Working Format</h1>
+        <div id="chart-container">
+            <canvas id="workingFormatChart"></canvas>
+        </div>
+
+        <!-- Role Wise Count (Multi-Row Card) -->
+        <div id="multirow-card">
+            <h3>Role Wise Employee Count</h3>
+            <div id="roleCardsContainer"></div>
+        </div>
+
+        <!-- Stacked Column Chart -->
+        <div class="stacked-chart-container">
+            <h1>Stacked Column Chart of Employees</h1>
+            <canvas id="stackedChart" width="50" height="300"></canvas>
+        </div>
+
+        <!-- Location Chart -->
+        <div class="loc-container">
+            <h1>Employee Locations</h1>
+            <canvas id="employeeChart" width="300" height="200"></canvas>
+        </div>
+    </div>
+
+    <script>
+        // Initialize the gauge chart
+const ctx = document.getElementById('attendanceGauge').getContext('2d');
+const gaugeChart = new Chart(ctx, {
+    type: 'gauge',
+    data: {
+        labels: ['Present'],
+        datasets: [{
+            value: 0, // Initial attendance value (this will be dynamic)
+            data: [0, 100], // The range of the gauge chart (0 to 100), adjust as needed
+            backgroundColor: ["green", "gray"], // Green section for attendance and gray for non-attendance
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        needle: {
+            radiusPercentage: 2, // Needle size
+            widthPercentage: 3,
+            lengthPercentage: 80,
+            color: 'black' // Needle color
+        },
+        valueLabel: {
+            display: false // Disable the black value label bar
+        },
+        layout: {
+            padding: {
+                top: 20,
+                bottom: 20
+            }
+        },
+        plugins: {
+            datalabels: {
+                display: false // Hide labels inside the chart
+            }
+        }
+    }
+});
+
+
+        // Update the gauge dynamically
+        function updateGauge(loggedIn, totalEmployees) {
+            const percentage = (loggedIn / totalEmployees) * 50; // Calculate percentage
+            gaugeChart.data.datasets[0].data = [percentage, 100 - percentage];
+            gaugeChart.data.datasets[0].value = loggedIn; // Update logged-in value
+            gaugeChart.update();
+
+            // Update attendance text
+            document.getElementById('attendanceText').textContent = `${loggedIn} of ${totalEmployees} Employees Logged In`;
+        }
+
+        // Fetch attendance data
+        function fetchAttendance() {
+            fetch('/today-attendance')
+                .then(response => response.json())
+                .then(data => {
+                    const { loggedIn, totalEmployees } = data;
+                    updateGauge(loggedIn, totalEmployees);
+                })
+                .catch(error => {
+                    console.error("Error fetching attendance data:", error);
+                    document.getElementById('attendanceText').textContent = "Error fetching attendance data";
+                });
+        }
+
+        // Poll for updates every 5 seconds
+        setInterval(fetchAttendance, 5000);
+        fetchAttendance(); // Initial fetch
+
+
+
+
+// Fetch data and initialize the funnel chart
+fetch('/get_funnel_chart_data')
+    .then(response => response.json())
+    .then(data => {
+        const labels = data.map(item => item.month);
+        const hirings = data.map(item => -item.hirings); // Negative for left direction
+        const terminations = data.map(item => item.terminations); // Positive for right direction
+
+        const maxAbsValue = Math.max(
+            ...hirings.map(Math.abs),
+            ...terminations
+        );
+        const gap = maxAbsValue * 0.1; // 10% gap of the max value
+
+        // Initialize Chart.js Bar Chart
+        const ctx = document.getElementById('funnelChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'horizontalBar',
+            data: {
+                labels: labels,
+                datasets: [
+                    {
+                        label: 'Hirings',
+                        data: hirings,
+                        backgroundColor: 'rgba(76, 175, 80, 0.7)', // Green
+                        borderColor: 'rgba(76, 175, 80, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Terminations',
+                        data: terminations,
+                        backgroundColor: 'rgba(244, 67, 54, 0.7)', // Red
+                        borderColor: 'rgba(244, 67, 54, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                indexAxis: 'y',
+                layout: {
+                    padding: 30
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'top'
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(tooltipItem) {
+                                const datasetLabel = tooltipItem.dataset.label || '';
+                                const value = Math.abs(tooltipItem.raw); // Show absolute value
+                                return `${datasetLabel}: ${value}`;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        stacked: true,
+                        min: -maxAbsValue - gap,
+                        max: maxAbsValue + gap,
+                        ticks: {
+                            callback: function(value) {
+                                return Math.abs(value);
+                            }
+                        },
+                        grid: {
+                            display: false // Remove x-axis gridlines
+                        }
+                    },
+                    y: {
+                        stacked: true,
+                        title: {
+                            display: true,
+                            text: 'Months'
+                        },
+                        grid: {
+                            display: true // Remove y-axis gridlines
+                        }
+                    }
+                },
+                animation: {
+                    duration: 1100,
+                    easing: 'easeOutCubic'
+                }
+            }
+        });
+
+        // Update Hiring Summary
+        const totalHirings = data.reduce((sum, item) => sum + item.hirings, 0);
+        const totalTerminations = data.reduce((sum, item) => sum + item.terminations, 0);
+        document.getElementById('hiringRatioText').textContent = `Total Hirings: ${totalHirings} | Total Terminations: ${totalTerminations}`;
+    })
+    .catch(error => {
+        console.error('Error fetching chart data:', error);
+        document.getElementById('hiringRatioText').textContent = 'Error fetching data';
+    });
+
+
+
+
+    // Fetch data dynamically from Flask backend
+    document.addEventListener('DOMContentLoaded', async () => {
+            const response = await fetch('http://127.0.0.1:5000/salary-data'); // Replace with your Flask API URL
+            const data = await response.json();
+
+            const chartOptions = {
+                chart: {
+                    height: 400,
+                    type: 'line',
+                    toolbar: { show: false },
+                },
+                series: data.series,
+                xaxis: {
+                    categories: data.labels,
+                    title: { text: 'Job Role' },
+                },
+                yaxis: {
+                    title: { text: 'Salary (USD)' },
+                },
+                stroke: {
+                    curve: 'smooth',
+                    width: 2,
+                },
+                markers: {
+                    size: 5,
+                },
+                title: {
+                    text: 'Employee Salary Ranges by Department',
+                    align: 'center',
+                },
+                legend: {
+                    position: 'top',
+                    horizontalAlign: 'center',
+                },
+            };
+
+            const salaryChart = new ApexCharts(document.querySelector('#salary-chart'), chartOptions);
+            salaryChart.render();
+        });
+
+
+
+        // Fetch data from the backend
+        async function fetchData() {
+            const response = await fetch('http://127.0.0.1:5000/data');
+            const data = await response.json();
+            return data;
+        }
+
+        class PieChart {
+            constructor(data) {
+                this.data = data;
+                this.svg = document.querySelector('.pie-chart svg');
+                this.legend = document.querySelector('.legend');
+                this.total = data.reduce((sum, item) => sum + item.value, 0);
+            }
+
+            createSlice(startAngle, endAngle, color) {
+                const centerX = 50, centerY = 50, radius = 45;
+                const startRad = (startAngle - 90) * (Math.PI / 180);
+                const endRad = (endAngle - 90) * (Math.PI / 180);
+                const x1 = centerX + radius * Math.cos(startRad);
+                const y1 = centerY + radius * Math.sin(startRad);
+                const x2 = centerX + radius * Math.cos(endRad);
+                const y2 = centerY + radius * Math.sin(endRad);
+                const largeArc = endAngle - startAngle > 180 ? 1 : 0;
+                return `M ${centerX} ${centerY} L ${x1} ${y1} A ${radius} ${radius} 0 ${largeArc} 1 ${x2} ${y2} Z`;
+            }
+
+            render() {
+                this.svg.innerHTML = ''; // Clear previous slices
+                let currentAngle = 0;
+
+                this.data.forEach((item, index) => {
+                    const sliceAngle = (item.value / this.total) * 360;
+                    const startAngle = currentAngle;
+                    currentAngle += sliceAngle;
+
+                    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                    path.setAttribute('d', this.createSlice(startAngle, currentAngle, item.color));
+                    path.setAttribute('fill', item.color);
+                    path.classList.add('slice');
+
+                    path.addEventListener('mouseenter', () => this.highlightSlice(index));
+                    path.addEventListener('mouseleave', () => this.removeHighlight(index));
+
+                    this.svg.appendChild(path);
+                });
+            }
+
+            createLegend() {
+                this.legend.innerHTML = '';
+                this.data.forEach((item, index) => {
+                    const legendItem = document.createElement('div');
+                    legendItem.classList.add('legend-item');
+                    legendItem.innerHTML = `
+                        <div class="legend-color" style="background-color: ${item.color}"></div>
+                        <div class="legend-text">
+                            <div class="legend-label">${item.label}</div>
+                            <div class="legend-value">${item.value}</div>
+                        </div>
+                    `;
+
+                    legendItem.addEventListener('mouseenter', () => this.highlightSlice(index));
+                    legendItem.addEventListener('mouseleave', () => this.removeHighlight(index));
+
+                    this.legend.appendChild(legendItem);
+                });
+            }
+
+            highlightSlice(index) {
+                const slice = this.svg.querySelectorAll('.slice')[index];
+                const legendItem = this.legend.querySelectorAll('.legend-item')[index];
+                slice.classList.add('highlighted');
+                legendItem.classList.add('highlighted');
+            }
+
+            removeHighlight(index) {
+                const slice = this.svg.querySelectorAll('.slice')[index];
+                const legendItem = this.legend.querySelectorAll('.legend-item')[index];
+                slice.classList.remove('highlighted');
+                legendItem.classList.remove('highlighted');
+            }
+
+            init() {
+                this.createLegend();
+                this.render();
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', async () => {
+            const data = await fetchData();
+            const chart = new PieChart(data);
+            chart.init();
+        });
+
+
+
+// Fetch the attendance data from the Flask backend
+fetch('/get-attendance-data')
+    .then(response => response.json())
+    .then(data => {
+        if (!data || Object.keys(data).length === 0) {
+            console.error('No data available or invalid format:', data);
+            return;
+        }
+
+        // Define the correct chronological order of months
+        const monthOrder = [
+            "January", "February", "March", "April", 
+            "May", "June", "July", "August", 
+            "September", "October", "November", "December"
+        ];
+
+        // Filter and map the months and their corresponding attendance values
+        const sortedMonths = monthOrder.filter(month => data[month] !== undefined);
+        const attendance = sortedMonths.map(month => data[month]);
+
+        // Generate light pastel colors for each bar
+        const pastelColors = [
+            "#FF9999", "#FFCC99", "#FFFF99", "#CCFF99",
+            "#99FF99", "#99FFCC", "#99FFFF", "#99CCFF",
+            "#9999FF", "#CC99FF", "#FF99FF", "#FF99CC"
+        ];
+        const barColors = sortedMonths.map((_, index) => pastelColors[index % pastelColors.length]);
+
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+
+        // Initialize the chart for Chart.js 2.x
+        const chart = new Chart(ctx, {
+            type: 'horizontalBar', // Chart.js 2.x uses 'horizontalBar'
+            data: {
+                labels: sortedMonths,
+                datasets: [{
+                    label: 'Attendance Percentage',
+                    data: Array(sortedMonths.length).fill(0),
+                    backgroundColor: barColors,
+                    borderColor: barColors,
+                    borderWidth: 1,
+                    hoverBackgroundColor: barColors.map(color => shadeColor(color, -10)), // Slightly darker on hover
+                    hoverBorderColor: barColors.map(color => shadeColor(color, -20))
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                animation: {
+                    duration: 500 // Smooth transition
+                },
+                scales: {
+                    xAxes: [{
+                        ticks: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }],
+                    yAxes: [{
+                        ticks: {
+                            fontSize: 12
+                        }
+                    }]
+                },
+                tooltips: {
+                    callbacks: {
+                        label: function (tooltipItem, data) {
+                            return ` ${tooltipItem.xLabel}%`;
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to update the chart one bar at a time
+        let currentIndex = 0;
+        const updateChart = () => {
+            if (currentIndex < attendance.length) {
+                chart.data.datasets[0].data[currentIndex] = attendance[currentIndex];
+                chart.update();
+                currentIndex++;
+                setTimeout(updateChart, 500); // Wait 500ms before updating the next bar
+            }
+        };
+
+        // Start updating the chart
+        updateChart();
+
+    })
+    .catch(error => console.error('Error fetching attendance data:', error));
+
+// Function to slightly darken colors for hover effect
+function shadeColor(color, percent) {
+    const num = parseInt(color.slice(1), 16),
+        amt = Math.round(2.55 * percent),
+        R = (num >> 16) + amt,
+        G = ((num >> 8) & 0x00FF) + amt,
+        B = (num & 0x0000FF) + amt;
+    return `rgb(${Math.min(255, R)},${Math.min(255, G)},${Math.min(255, B)})`;
+}
+
+
+
+// Fetch the working format data from the Flask backend
+fetch('/get-working-format')
+    .then(response => response.json())
+    .then(data => {
+        if (!data || Object.keys(data).length === 0) {
+            console.error('No data available or invalid format:', data);
+            return;
+        }
+
+        const labels = Object.keys(data); // e.g., ['Onsite', 'Hybrid', 'Remote']
+        const values = labels.map(label => data[label]); // Ensure order of labels matches data
+        const pastelColors = [
+            'rgba(255, 99, 132, 0.7)',   // Red
+            'rgba(75, 192, 192, 0.7)',   // Green
+            'rgba(54, 162, 235, 0.7)'    // Blue
+        ];
+
+        const hoverColors = pastelColors.map(color => shadeColor(color, -15)); // Slightly darker on hover
+
+        const ctx = document.getElementById('workingFormatChart').getContext('2d');
+
+        // Initialize the chart with empty data
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: labels,
+                datasets: [{
+                    data: Array(labels.length).fill(0), // Start with zero for animation
+                    backgroundColor: pastelColors,
+                    borderWidth: 0,
+                    hoverBackgroundColor: hoverColors // Set hover colors
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%', // Donut effect
+                animation: {
+                    animateRotate: true, // Rotate animation
+                    animateScale: true,  // Scale animation
+                    duration: 1500,      // Animation duration
+                    easing: 'easeInOutQuart'
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: '#000000',
+                            font: {
+                                size: 16,
+                                family: 'Arial'
+                            }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: '#34495e',
+                        titleColor: '#ffffff',
+                        bodyColor: '#ffffff',
+                        callbacks: {
+                            label: function (context) {
+                                return `${context.label}: ${context.raw}%`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Function to update the chart one slice at a time
+        let currentIndex = 0;
+        const updateChart = () => {
+            if (currentIndex < values.length) {
+                chart.data.datasets[0].data[currentIndex] = values[currentIndex];
+                chart.update();
+                currentIndex++;
+                setTimeout(updateChart, 500); // Wait 500ms before updating the next slice
+            }
+        };
+
+        // Start updating the chart
+        updateChart();
+    })
+    .catch(error => console.error('Error fetching data:', error));
+
+// Function to slightly darken colors for hover effect
+function shadeColor(color, percent) {
+    const num = parseInt(color.slice(5, -1).split(',')[0]), // Extract only the red value for simplicity
+        amt = Math.round(2.55 * percent),
+        R = Math.min(255, num + amt),
+        G = Math.min(255, num + amt),
+        B = Math.min(255, num + amt);
+    return `rgb(${R},${G},${B})`;
+}
+
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+    const ctx = document.getElementById("stackedChart").getContext("2d");
+
+    // Fetch data from the Flask backend
+    fetch("/datas")
+        .then((response) => response.json())
+        .then((data) => {
+            // Create a stacked bar chart
+            new Chart(ctx, {
+                type: "bar",
+                data: {
+                    labels: data.ages, // Age groups on X-axis
+                    datasets: [
+                        {
+                            label: "Male",
+                            data: data.male_counts,
+                            backgroundColor: "rgba(54, 162, 235, 0.7)", // Blue color
+                            stack: 'Stack 0', // Ensure stacking is explicitly defined
+                        },
+                        {
+                            label: "Female",
+                            data: data.female_counts,
+                            backgroundColor: "rgba(255, 99, 132, 0.7)", // Red color
+                            stack: 'Stack 0', // Same stack as 'Male' for proper stacking
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false, // Allows flexible resizing
+                    plugins: {
+                        legend: {
+                            position: "top",
+                            labels: {
+                                color: "#000",
+                                font: {
+                                    size: 14
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            stacked: true, // Enable stacking on X-axis
+                            title: {
+                                display: true,
+                                text: 'Age Groups',
+                            },
+                        },
+                        y: {
+                            stacked: true, // Enable stacking on Y-axis
+                            title: {
+                                display: true,
+                                text: 'Number of Employees',
+                            },
+                            beginAtZero: true,
+                        },
+                    },
+                },
+            });
+        })
+        .catch((error) => console.error("Error fetching data:", error));
+});
+
+
+//Location Chart
+document.addEventListener("DOMContentLoaded", function () {
+    
+    fetch('/dat')
+        .then(response => response.json())
+        .then(data => {
+            
+            const locations = data.locations;
+            const maleCounts = data.male_counts;
+            const femaleCounts = data.female_counts;
+            const otherCounts = data.other_counts;
+
+            
+            const ctx = document.getElementById('employeeChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: locations,
+                    datasets: [
+                        {
+                            label: 'Male',
+                            data: maleCounts,
+                            backgroundColor: 'rgba(54, 162, 235, 0.6)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Female',
+                            data: femaleCounts,
+                            backgroundColor: 'rgba(255, 99, 132, 0.6)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Other',
+                            data: otherCounts,
+                            backgroundColor: 'rgba(255, 206, 86, 0.6)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top', 
+                            labels: {
+                                font: {
+                                    family: 'Courier Moonspace', 
+                                    size: 14,                  
+                                    style: 'italic'           
+                                }
+                            }
+                        },
+                        tooltip: {
+                            enabled: true,
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)', 
+                            borderColor: '#FFFFFF',                
+                            borderWidth: 2,                        
+                            titleFont: {
+                                family: 'Courier Moonspace',      
+                                size: 14,
+                                style: 'italic'
+                            },
+                            bodyFont: {
+                                family: 'Courier Moonspace',       
+                                size: 12,
+                                style: 'italic'
+                            },
+                            footerFont: {
+                                family: 'Courier Moonspace',       
+                                size: 10,
+                                style: 'italic'
+                            },
+                            titleColor: '#FFFFFF',                
+                            bodyColor: '#FFFFFF',                  
+                            footerColor: '#FFFFFF',                
+                            caretPadding: 5                        
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Locations',
+                                font: {
+                                    family: 'Courier Moonspace', 
+                                    size: 14,                   
+                                    style: 'bold'               
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Courier Moonspace', 
+                                    size: 12,                   
+                                    style: 'italic'           
+                                }
+                            }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Number of Employees',
+                                font: {
+                                    family: 'Courier Moonspace', 
+                                    size: 14,                   
+                                    style: 'bold'               
+                                }
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Courier Moonspace',
+                                    size: 12,                   
+                                    style: 'italic'             
+                                }
+                            }
+                        }
+                    },
+                    layout: {
+                        padding: 20
+                    }
+                }
+            });
+        });
+});
+
+
+    </script>
+</body>
+</html>
