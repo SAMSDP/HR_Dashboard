@@ -1,0 +1,336 @@
+:root {
+    --primary-color: #6a5acd;
+    --secondary-color: #20b2aa;
+    --accent-color: #ffa07a;
+    --background-color: #f0f8ff;
+    --text-color: #333333;
+    --sidebar-width: 300px;
+    --transition-speed: 0.3s;
+  }
+  
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+  
+  body {
+    font-family: 'Poppins', sans-serif;
+    line-height: 1.6;
+    color: var(--text-color);
+    background-color: rgb(214, 233, 240);
+  }
+  
+  .container {
+    display: flex;
+    
+  }
+  
+ 
+.sidebar {
+  position: fixed; /* Makes the sidebar fixed */
+  top: 0;
+  left: 0;
+  width: 19.1%; /* Adjusted width for a smaller sidebar */
+  background-color: #2c3e50;
+  color: white;
+  height: 100vh; /* Ensures it spans the full height of the viewport */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Spaces out the menu and logout button */
+  padding: 20px;
+  box-sizing: border-box; /* Includes padding inside the width/height */
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+  margin: 0; /* Removes unnecessary spacing */
+}
+
+.sidebar ul li {
+  margin: 15px 0; /* Spacing between menu items */
+}
+
+.sidebar ul li a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px; /* Adjusted font size */
+  display: block; /* Ensures clickable area spans full width */
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.sidebar ul li a:hover {
+  background-color: #34495e;
+}
+
+
+.sidebar ul li a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
+.sidebar .logout {
+  padding: 12px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  transition: all 0.3s ease;
+  background: linear-gradient(45deg, #3949ab 30%, #5c6bc0 90%);
+  color: white;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  height: 40px;
+}
+  
+  /* Main Content Styles */
+  .main-content {
+    margin-left: 19%; /* Pushes the main content beside the sidebar */
+    padding: 20px;
+    width: 82%; /
+  }
+  
+  h2 {
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    font-size: 2.5rem;
+    text-align: center;
+  }
+  
+  .section {
+    background-color: white;
+    border-radius: 15px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    box-shadow: 0 5px 15px rgba(106, 90, 205, 0.1);
+    transition: transform var(--transition-speed);
+  }
+  
+  .section:hover {
+    transform: translateY(-5px);
+  }
+  
+  h3 {
+    color: var(--secondary-color);
+    margin-bottom: 1.5rem;
+    font-size: 1.8rem;
+    border-bottom: 2px solid var(--secondary-color);
+    padding-bottom: 0.5rem;
+  }
+  
+  /* Form Styles */
+  form {
+    display: grid;
+    gap: 1.5rem;
+  }
+  
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+  
+  .form-group {
+    display: flex;
+    flex-direction: column;
+  }
+  
+  label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    display: block;
+    color: var(--primary-color);
+  }
+  
+  input, textarea {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid #e0e0e0;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: all var(--transition-speed);
+  }
+  
+  input:focus, textarea:focus {
+    outline: none;
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 5px rgba(32, 178, 170, 0.3);
+  }
+  
+  input:disabled, textarea:disabled {
+    background-color: #f0f0f0;
+    cursor: not-allowed;
+  }
+  
+  textarea {
+    resize: vertical;
+    min-height: 100px;
+  }
+  
+  /* Button Styles */
+  .button-group {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  
+  button {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    cursor: pointer;
+    border-radius: 25px;
+    transition: all var(--transition-speed);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  }
+  
+  button:active {
+    transform: translateY(0);
+  }
+  
+  button:disabled {
+    background-color: #d1d1d1;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+  }
+  
+  #editButton {
+    background-color: var(--secondary-color);
+  }
+  
+  #editButton:hover {
+    background-color: #1c9e98;
+  }
+  
+  #updateButton {
+    background-color: var(--accent-color);
+  }
+  
+  #updateButton:hover {
+    background-color: #ff8c69;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 1024px) {
+    .form-row {
+      grid-template-columns: 1fr;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    .container {
+      flex-direction: column;
+    }
+  
+    .sidebar {
+      width: 100%;
+      padding: 1rem;
+    }
+  
+    .sidebar ul {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+    }
+  
+    .sidebar ul li {
+      margin-bottom: 0;
+    }
+  
+    .main-content {
+      padding: 1rem;
+    }
+  
+    .section {
+      padding: 1.5rem;
+    }
+  
+    h2 {
+      font-size: 2rem;
+    }
+  
+    h3 {
+      font-size: 1.5rem;
+    }
+  
+    .button-group {
+      flex-direction: column;
+    }
+  
+    button {
+      width: 100%;
+    }
+  }
+  
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 10px;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 5px;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--secondary-color);
+  }
+  
+  /* Additional Aesthetic Enhancements */
+  .section {
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .section::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(106, 90, 205, 0.1) 0%, rgba(255, 255, 255, 0) 70%);
+    opacity: 0;
+    transition: opacity var(--transition-speed);
+  }
+  
+  .section:hover::before {
+    opacity: 1;
+  }
+  
+  input, textarea {
+    background-color: #fafafa;
+  }
+  
+  input:hover, textarea:hover {
+    background-color: #ffffff;
+  }
+  
+  .sidebar a::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: #ffffff;
+    transition: width var(--transition-speed);
+  }
+  
+  .sidebar a:hover::after {
+    width: 100%;
+  }
+  
+  

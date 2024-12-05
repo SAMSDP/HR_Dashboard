@@ -1,454 +1,486 @@
+:root {
+  --primary-color: #6a5acd;
+  --secondary-color: #20b2aa;
+  --accent-color: #ffa07a;
+  --background-color: #f0f8ff;
+  --text-color: #333333;
+  --sidebar-width: 300px;
+  --transition-speed: 0.3s;
+}
+
+
 /* Sidebar */
 .sidebar {
-    position: fixed; /* Fixes the sidebar to the viewport */
-    top: 0;
-    left: 0;
-    width: 250px;
-    background-color: #2c3e50;
-    color: white;
-    height: 100vh; /* Full height of the viewport */
-    padding: 20px;
-    overflow-y: auto; /* Adds scrolling if the content exceeds the viewport height */
-    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
-    z-index: 1000; /* Ensures it stays above other elements */
+  position: fixed; /* Makes the sidebar fixed */
+  top: 0;
+  left: 0;
+  width: 19.1%; /* Adjusted width for a smaller sidebar */
+  background-color: #2c3e50;
+  color: white;
+  height: 100vh; /* Ensures it spans the full height of the viewport */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* Spaces out the menu and logout button */
+  padding: 20px;
+  box-sizing: border-box; /* Includes padding inside the width/height */
 }
 
 .sidebar ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
+  list-style: none;
+  padding: 0;
+  margin: 0; /* Removes unnecessary spacing */
 }
 
 .sidebar ul li {
-    margin: 15px 0;
+  margin: 16px 0; /* Spacing between menu items */
 }
 
 .sidebar ul li a {
-    color: white;
-    text-decoration: none;
-    font-size: 16px;
-    display: block; /* Ensures clickable area spans full width */
-    padding: 10px;
-    border-radius: 5px;
+  color: white;
+  text-decoration: none;
+  font-size: 16px; /* Adjusted font size */
+  display: block; /* Ensures clickable area spans full width */
+  padding: 10px;
+  border-radius: 5px;
 }
 
 .sidebar ul li a:hover {
-    background-color: #34495e;
+  background-color: #34495e;
 }
 
-/* Logout Button */
+
+.sidebar ul li a.active {
+  font-weight: bold;
+  text-decoration: underline;
+}
+
 .sidebar .logout {
-    background-color: #e74c3c;
-    color: white;
-    padding: 10px;
-    border: none;
-    cursor: pointer;
-    width: 100%;
-    margin-top: 388px;
-    border-radius: 5px;
-    font-size: 16px;
+  background-color: #e74c3c;
+  color: white;
+  border: none;
+  padding: 10px;
+  cursor: pointer;
+  text-align: center;
+  font-size: 16px;
+  border-radius: 5px;
 }
 
-.sidebar .logout:hover {
-    background-color: #c0392b;
+.sidebar a::after {
+  content: '';
+  display: block;
+  width: 0;
+  height: 2px;
+  background: #ffffff;
+  transition: width var(--transition-speed);
+}
+
+.sidebar a:hover::after {
+  width: 100%;
 }
 
 /* General Styles */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    margin: 0;
-    padding: 0;
+  font-family: 'Poppins', sans-serif;
+  background-color: rgb(214, 233, 240);
+  margin: 0;
+  padding: 0;
 }
 
 .container {
-    padding: 20px;
-    margin-left: 290px; /* Adjust based on your sidebar width */
+  padding: 20px;
+  margin-left: 290px; /* Adjust based on your sidebar width */
 }
 
 /* Flex container for Upcoming Meetings and Calendar */
 .flex-container {
-    display: flex;
-    justify-content: space-between;
-    gap: 20px;
-    flex-wrap: wrap;
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+  flex-wrap: wrap;
 }
 
 /* Upcoming Meetings */
 .upcoming-meetings {
-    flex: 1;
-    min-width: 500px;
-    max-width: 800px;
-    background-color: #ffffff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex: 1;
+  min-width: 500px;
+  max-width: 800px;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .upcoming-meetings h2 {
-    font-size: 24px;
-    margin-bottom: 15px;
+  font-size: 24px;
+  margin-bottom: 15px;
 }
 
 .upcoming-meetings table {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
 .upcoming-meetings th,
 .upcoming-meetings td {
-    padding: 10px;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 .upcoming-meetings th {
-    background-color: #f2f2f2;
+  background-color: #f4f4f4;
 }
 
 .upcoming-meetings tr:hover {
-    background-color: #f9f9f9;
-    cursor: pointer;
+  background-color: #f4f4f4;
+  cursor: pointer;
 }
 
 /* Calendar Container */
 #calendar-container {
-    flex: 1; /* Make calendar smaller */
-    min-width: 300px; /* Reduce width */
-    max-width: 550px; /* Limit the width */
-    background-color: #ffffff;
-    padding: 22px; /* Less padding */
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  flex: 1; /* Make calendar smaller */
+  min-width: 300px; /* Reduce width */
+  max-width: 550px; /* Limit the width */
+  background-color:#f4f4f4;
+  padding: 22px; /* Less padding */
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+
 }
 
 #calendar-container h2 {
-    font-size: 20px;
-    margin-bottom: 10px;
+  font-size: 20px;
+  margin-bottom: 10px;
 }
 
 /* FullCalendar Style Overrides */
 .fc {
-    font-size: 12px; /* Smaller font size */
+  font-size: 12px; /* Smaller font size */
 }
 
 .fc-event-title {
-    font-size: 12px; /* Adjust size if needed */
-    color: rgb(0, 0, 0); /* Adjust color */
-    font-weight: lighter;
-  }
-  
-  .fc-event-dot {
-    display: none; /* Hide the blue dot */
-  }
-  
+  font-size: 12px; /* Adjust size if needed */
+  color: rgb(0, 0, 0); /* Adjust color */
+  font-weight: lighter;
+}
+
+.fc-event-dot {
+  display: none; /* Hide the blue dot */
+}
+
 
 .fc-toolbar {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    font-size: 14px; /* Smaller toolbar text */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 14px; /* Smaller toolbar text */
 }
 
 .fc .fc-daygrid-day-number {
-    font-size: 13px; /* Smaller date numbers */
-    font-weight: bolder;
+  font-size: 13px; /* Smaller date numbers */
+  font-weight: bolder;
 }
 
 .fc .fc-daygrid-event {
-    font-size: 10px; /* Smaller event text */
+  font-size: 10px; /* Smaller event text */
 }
 
 .fc-daygrid-day-frame {
-    padding: 2px; /* Reduce padding */
+  padding: 2px; /* Reduce padding */
 }
 
 .fc-scrollgrid {
-    height: 300px !important; /* Reduce height */
-    max-height: 300px;
+  height: 300px !important; /* Reduce height */
+  max-height: 300px;
 }
 
 .fc-toolbar-title {
-    font-size: 14px; /* Smaller title */
+  font-size: 14px; /* Smaller title */
 }
 
 .fc .fc-daygrid-day {
-    height: 50px; /* Decrease day cell height */
+  height: 50px; /* Decrease day cell height */
 }
 
 /* Reduce spacing between rows and cells */
 .fc .fc-scrollgrid-sync-inner {
-    height: 40px !important; /* Adjust height */
+  height: 40px !important; /* Adjust height */
 }
 
+/* Highlight Today's Date with Blue Background */
+.fc .fc-day-today {
+  background-color: #78f3a5c5 !important; /* Use a strong blue background */
+  color: rgb(17, 14, 14) !important; /* Ensure text is white */
+  font-weight: bold !important; /* Make text bold */
+}
 /* Modal */
 /* Modal overlay (blurred background) */
 /* Modal overlay (blurred background) */
 .modal-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);  /* Dark overlay */
-    z-index: 999;  /* Make sure it's above all other content */
-    display: none;  /* Hidden by default */
-    backdrop-filter: blur(5px);  /* Apply blur effect to background */
-  }
-  
-  /* Modal content container */
-  .modal-content {
-    position: fixed;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);  /* Centers the modal */
-    background-color: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    z-index: 1000;  /* Make sure modal content is above the overlay */
-    max-width: 600px;
-    width: 90%;
-    overflow-y: auto;
-  }
-  
-  /* Close button inside the modal */
-  .modal-content .close {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    font-size: 20px;
-    font-weight: bold;
-    color: #000;
-    cursor: pointer;
-    background: none;
-    border: none;
-  }
-  
-  
-  /* For smooth fade-in and fade-out effects */
-  .modal-content, .modal-overlay {
-    transition: opacity 0.3s ease;
-  }
-  
-  /* Make modal visible */
-  .modal-content.active, .modal-overlay.active {
-    display: block;
-  }
-
-/* Modal Content Box */
-.modal_content {
-    position: relative;
-    background-color: #fefefe;
-    margin: auto;
-    padding: 20px;
-    border-radius: 8px;
-    width: 40%;
-    max-width: 600px;
-    min-width: 320px;
-    top: 50%;
-    transform: translateY(-50%);
-    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  /* Close Button */
-  .close-modal {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: color 0.3s;
-  }
-  
-  .close-modal:hover,
-  .close-modal:focus {
-    color: #000;
-  }
-
-  
-  /* Modal styles */
-.modal {
-  display: none;
   position: fixed;
-  z-index: 1000;
-  left: 0;
   top: 0;
-  width: 100%;
-  height: 100%;
-  overflow: auto;
-  background-color: rgba(0, 0, 0, 0.5);
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);  /* Dark overlay */
+  z-index: 999;  /* Make sure it's above all other content */
+  display: none;  /* Hidden by default */
+  backdrop-filter: blur(5px);  /* Apply blur effect to background */
 }
 
-.modal.active {
+/* Modal content container */
+.modal-content {
+  position: fixed;
+  top: 30%;
+  left: 50%;
+  transform: translate(-50%, -50%);  /* Centers the modal */
+  background-color: rgb(255, 255, 255);
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  z-index: 1000;  /* Make sure modal content is above the overlay */
+  max-width: 600px;
+  width: 90%;
+  overflow-y: auto;
+}
+
+/* Close button inside the modal */
+.modal-content .close {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #000;
+  cursor: pointer;
+  background: none;
+  border: none;
+}
+
+
+/* For smooth fade-in and fade-out effects */
+.modal-content, .modal-overlay {
+  transition: opacity 0.3s ease;
+}
+
+/* Make modal visible */
+.modal-content.active, .modal-overlay.active {
   display: block;
 }
 
-.modalcontent {
-  background-color: #fff;
-  margin: 15% auto;
+/* Modal Content Box */
+.modal_content {
+  position: relative;
+  background-color: #fefefe;
+  margin: auto;
   padding: 20px;
-  border: 1px solid #888;
-  width: 50%;
-  border-radius: 5px;
+  border-radius: 8px;
+  width: 40%;
+  max-width: 600px;
+  min-width: 320px;
+  top: 50%;
+  transform: translateY(-50%);
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  overflow-y: auto;
+  size: 50px;
+  height:90%;
 }
 
+/* Close Button */
 .close-modal {
   color: #aaa;
   float: right;
   font-size: 28px;
   font-weight: bold;
+  cursor: pointer;
+  transition: color 0.3s;
 }
 
 .close-modal:hover,
 .close-modal:focus {
-  color: black;
-  text-decoration: none;
-  cursor: pointer;
+  color: #000;
 }
 
-  
-  /* Event List Section */
-  .event-list {
-    margin-bottom: 20px;
-    padding: 10px;
-    border: 1px solid #ddd;
-    border-radius: 5px;
-    background-color: #f9f9f9;
-    max-height: 200px;
-    overflow-y: auto;
-  }
-  
-  .event-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 8px 10px;
-    margin-bottom: 5px;
-    background-color: #fff;
-    border-radius: 4px;
-    border: 1px solid #ddd;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  }
-  
-  .event-item span {
-    font-size: 16px;
-  }
-  
-  .delete-btn {
-    background-color: #ff4d4f;
-    color: white;
-    border: none;
-    padding: 5px 8px;
-    border-radius: 4px;
-    font-size: 14px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  .delete-btn:hover {
-    background-color: #d9363e;
-  }
-  
-  /* Add Event Form Styles */
-  form {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  label {
-    font-weight: bold;
-  }
-  
-  input[type="text"],
-  input[type="time"] {
-    padding: 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    width: 100%;
-    box-sizing: border-box;
-  }
-  
-  button[type="submit"] {
-    background-color: #4caf50;
-    color: white;
-    border: none;
-    padding: 10px;
-    border-radius: 4px;
-    font-size: 16px;
-    cursor: pointer;
-    transition: background-color 0.3s;
-  }
-  
-  button[type="submit"]:hover {
-    background-color: #43a047;
-  }
-  
+
+/* Modal styles */
+.modal {
+display: none;
+position: fixed;
+z-index: 1000;
+left: 0;
+top: 0;
+width: 100%;
+height: 100%;
+overflow: auto;
+background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal.active {
+display: block;
+}
+
+.modalcontent {
+background-color: #fff;
+margin: 15% auto;
+padding: 20px;
+border: 1px solid #888;
+width: 50%;
+border-radius: 5px;
+}
+
+.close-modal {
+color: #aaa;
+float: right;
+font-size: 28px;
+font-weight: bold;
+}
+
+.close-modal:hover,
+.close-modal:focus {
+color: black;
+text-decoration: none;
+cursor: pointer;
+}
+
+
+/* Event List Section */
+.event-list {
+  margin-bottom: 20px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+  max-height: 200px;
+  overflow-y: auto;
+}
+
+.event-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 10px;
+  margin-bottom: 5px;
+  background-color: #fff;
+  border-radius: 4px;
+  border: 1px solid #ddd;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.event-item span {
+  font-size: 16px;
+}
+
+.delete-btn {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 5px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.delete-btn:hover {
+  background-color: #d9363e;
+}
+
+/* Add Event Form Styles */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+label {
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="time"] {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+button[type="submit"] {
+  background-color: #4caf50;
+  color: white;
+  border: none;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+button[type="submit"]:hover {
+  background-color: #43a047;
+}
+
 .highlighted {
-    background-color: #00ddff;
-    color: white;
-  }
+  background-color: #00ddff;
+  color: white;
+}
 
 /* Feedback Section */
 .feedback-section {
-    background-color: #f2f2f2;
-    padding: 20px;
-    margin-top: 2px;
-    margin-left: 290px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  margin-top: 2px;
+  margin-left: 290px;
+  border-radius: 8px;
 }
 
 .feedback-tile {
-    display: none;
-    background-color: #ffffff;
-    padding: 15px;  
-    border-radius: 8px;
-    margin-bottom: 10px;
+  display: none;
+  background-color: #ffffff;
+  padding: 15px;  
+  border-radius: 8px;
+  margin-bottom: 10px;
 }
 
 .feedback-tile .feedback-title {
-    font-size: 18px;
-    font-weight: bold;
+  font-size: 18px;
+  font-weight: bold;
 }
 
 .feedback-tile .feedback-content {
-    margin-top: 8px;
-    font-size: 14px;
-    color: #555;
+  margin-top: 8px;
+  font-size: 14px;
+  color: #555;
 }
 
 .feedback-tile .employee-name {
-    display: block;
-    font-style: italic;
-    font-size: 12px;
-    color: #888;
+  display: block;
+  font-style: italic;
+  font-size: 12px;
+  color: #881b9e;
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-    .container {
-        margin-left: 0;
-        padding: 10px;
-    }
-
-    .flex-container {
-        flex-direction: column;
-    }
-
-    .upcoming-meetings,
-    #calendar-container {
-        width: 100%;
-    }
-    .modal-content {
-        width: 80%;
-      }
-}
-@media (max-width: 480px) {
-    .modal-content {
-      width: 90%;
-    }
+  .container {
+      margin-left: 0;
+      padding: 10px;
   }
 
+  .flex-container {
+      flex-direction: column;
+  }
+
+  .upcoming-meetings,
+  #calendar-container {
+      width: 100%;
+  }
+  .modal-content {
+      width: 80%;
+    }
+}
+@media (max-width: 480px) {
+  .modal-content {
+    width: 90%;
+  }
+}
 

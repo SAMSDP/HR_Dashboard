@@ -1,12 +1,24 @@
+:root {
+    --primary-color: #6a5acd;
+    --secondary-color: #20b2aa;
+    --accent-color: #ffa07a;
+    --background-color: #f0f8ff;
+    --text-color: #333333;
+    --sidebar-width: 300px;
+    --transition-speed: 0.3s;
+  }
+
 body {
-    font-family: Arial, sans-serif;
+    font-family: 'Poppins', sans-serif;
     margin: 0;
+    background-color: rgb(214, 233, 240);
 }
 
 .container {
     display: flex;
 }
 
+/* Sidebar */
 .sidebar {
     position: fixed; /* Makes the sidebar fixed */
     top: 0;
@@ -20,38 +32,38 @@ body {
     justify-content: space-between; /* Spaces out the menu and logout button */
     padding: 20px;
     box-sizing: border-box; /* Includes padding inside the width/height */
-}
-
-.sidebar ul {
+  }
+  
+  .sidebar ul {
     list-style: none;
     padding: 0;
     margin: 0; /* Removes unnecessary spacing */
-}
-
-.sidebar ul li {
-    margin: 15px 0; /* Spacing between menu items */
-}
-
-.sidebar ul li a {
+  }
+  
+  .sidebar ul li {
+    margin: 16px 0; /* Spacing between menu items */
+  }
+  
+  .sidebar ul li a {
     color: white;
     text-decoration: none;
     font-size: 16px; /* Adjusted font size */
     display: block; /* Ensures clickable area spans full width */
     padding: 10px;
     border-radius: 5px;
-}
-
-.sidebar ul li a:hover {
+  }
+  
+  .sidebar ul li a:hover {
     background-color: #34495e;
-}
-
-
-.sidebar ul li a.active {
+  }
+  
+  
+  .sidebar ul li a.active {
     font-weight: bold;
     text-decoration: underline;
-}
-
-.sidebar .logout {
+  }
+  
+  .sidebar .logout {
     background-color: #e74c3c;
     color: white;
     border: none;
@@ -60,7 +72,20 @@ body {
     text-align: center;
     font-size: 16px;
     border-radius: 5px;
-}
+  }
+
+  .sidebar a::after {
+    content: '';
+    display: block;
+    width: 0;
+    height: 2px;
+    background: #ffffff;
+    transition: width var(--transition-speed);
+  }
+  
+  .sidebar a:hover::after {
+    width: 100%;
+  }
 
 /* Main content adjustment */
 .main-content {

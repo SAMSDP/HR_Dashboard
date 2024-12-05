@@ -315,6 +315,34 @@ INSERT INTO `permission_requests` VALUES (1,1,'Alice Johnson','IT','Personal','D
 UNLOCK TABLES;
 
 --
+-- Table structure for table `rolewise`
+--
+
+DROP TABLE IF EXISTS `rolewise`;
+/*!40101 SET @saved_cs_client     = @@character_set_client */;
+/*!50503 SET character_set_client = utf8mb4 */;
+CREATE TABLE `rolewise` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `name` varchar(45) NOT NULL,
+  `role` varchar(45) NOT NULL,
+  ` experience` varchar(45) NOT NULL,
+  `skills` varchar(45) NOT NULL,
+  `gender` varchar(45) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=20 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+/*!40101 SET character_set_client = @saved_cs_client */;
+
+--
+-- Dumping data for table `rolewise`
+--
+
+LOCK TABLES `rolewise` WRITE;
+/*!40000 ALTER TABLE `rolewise` DISABLE KEYS */;
+INSERT INTO `rolewise` VALUES (1,'Daniel Smith','Developer','3 years','Java,Spring Boot','Male'),(2,'Eva Johnson','Developer','1 year','HTML, CSS','Female'),(3,'Liam Williams','Designer','3 years','Figma, Sketch','Male'),(4,'Zoe Brown','Designer','5 years','Adobe XD, Photoshop','Female'),(5,'David Martinez','Data Scientist','2 years','R, Data Analysis','Male'),(6,'Sarah Garcia','Data Scientist','6 years','Machine Learning, Python','Female'),(7,'Chris Wilson','Data Scientist','4 years','Deep Learning, TensorFlow','Male'),(8,'Mason Anderson','Manager','5 years','Agile, Scrum','Male'),(9,'Lucas Thomas','Manager','7 years','Risk Management, Communication','Male'),(10,'Sophia Jackson','Manager','3 years','Team Leadership, Budgeting','Female'),(11,'Emma Davis','Business Analyst','4 years','Requirement Gathering, UML','Female'),(12,'Oliver Brown','Business Analyst','2 years','Data Analysis, SQL','Male'),(13,'Sophia Adams','Business Analyst','3 years','Stakeholder Management, Agile','Female'),(14,'Ethan Clark','Business Analyst','5 years','Business Process Mapping, Tableau','Male'),(15,'Zara','Tester','6 years','Python,AI','Female'),(16,'Peter','Tester','8 years','R,Java','Male'),(17,'Liya','Tester','4 years','SQL','Female'),(18,'John','Tester','7 years','Ruby,SQL','Male'),(19,'Tina','Tester','5years','Datascience','Female');
+/*!40000 ALTER TABLE `rolewise` ENABLE KEYS */;
+UNLOCK TABLES;
+
+--
 -- Table structure for table `salary_distribution`
 --
 
@@ -386,4 +414,4 @@ UNLOCK TABLES;
 /*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;
 /*!40111 SET SQL_NOTES=@OLD_SQL_NOTES */;
 
--- Dump completed on 2024-12-04  1:50:57
+-- Dump completed on 2024-12-05 10:58:14

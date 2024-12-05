@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Leave Permission Form</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .logo {
+            width: 100px;
+            margin-bottom: 10px;
+        }
+
+        h1 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+        }
+
+        h2 {
+            font-size: 1.2rem;
+            color: #7f8c8d;
+        }
+
+        .form-row {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            font-weight: 500;
+            margin-bottom: 8px;
+        }
+
+        input, select, textarea, button {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        input[type="checkbox"] {
+            width: auto;
+            margin-right: 8px;
+        }
+
+        .checkbox-group label {
+            display: inline-block;
+            margin-right: 15px;
+            font-weight: normal;
+        }
+
+        textarea {
+            resize: none;
+        }
+
+        button {
+            background-color: #3498db;
+            color: white;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #2980b9;
+        }
+
+        .certification {
+            font-size: 0.9rem;
+            color: #555;
+            background: #f8f8f8;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Permission Application</h1>
+        </header>
+        <form id="leaveForm" action="/submit_permision" method="post">
+            <div class="form-row">
+                <label for="employeeName">Employee Name *</label>
+                <div class="name-group">
+                    <input type="text" id="firstName" name="firstName" placeholder="First" required>
+                    <input type="text" id="lastName" name="lastName" placeholder="Last" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="employeeID">Employee ID *</label>
+                <input type="text" id="employeeID" name="employeeID" placeholder="Enter your Employee ID" required>
+            </div>
+            <div class="form-row">
+                <label for="department">Department *</label>
+                <select id="department" name="department" required>
+                    <option value="">Select</option>
+                    <option value="HR">HR</option>
+                    <option value="Finance">Finance</option>
+                    <option value="IT">IT</option>
+                    <option value="Marketing">Marketing</option>
+                </select>
+            </div>
+            <div class="form-row">
+                <label>Type of Absence Request *</label>
+                <div class="checkbox-group">
+                    <label><input type="checkbox" name="absenceType" value="Sick"> Sick</label>
+                    <label><input type="checkbox" name="absenceType" value="Personal Leave"> Personal Leave</label>
+                    <label><input type="checkbox" name="absenceType" value="Bereavement"> Bereavement</label>
+                    <label><input type="checkbox" name="absenceType" value="Maternity/Paternity"> Maternity/Paternity</label>
+                    <label><input type="checkbox" name="absenceType" value="Time off without Payment"> Time off without Payment</label>
+                    <label><input type="checkbox" name="absenceType" value="Others"> Others</label>
+                </div>
+            </div>
+            <div class="form-row">
+                <label for="reason">Reason</label>
+                <textarea id="reason" name="reason" placeholder="Enter your reason here..." rows="3"></textarea>
+            </div>
+            <div class="form-row">
+                <label for="absenceFrom">Starting Time *</label>
+                <input type="time" id="absenceFrom" name="absenceFrom" required>
+            </div>
+            <div class="form-row">
+                <label for="absenceTo">Ending Time *</label>
+                <input type="time" id="absenceTo" name="absenceTo" required>
+            </div>
+            <div class="form-row">
+                <label for="totalHours">Total Hours *</label>
+                <input type="number" id="totalHours" name="totalHours" required>
+            </div>
+            <div class="form-row">
+                <p class="certification">
+                    <strong>Certification:</strong> I hereby request leave/approved absence from duty as indicated above and certify that such leave/absence is requested for the purpose(s) indicated. I understand that falsification on this form may be grounds for disciplinary action.
+                </p>
+            </div>
+            <div class="form-row">
+                <button type="submit">Submit</button>
+            </div>
+        </form>
+    </div>
+    <script>
+        document.getElementById("leaveForm").addEventListener("submit", function(event) {
+            // Check if at least one checkbox is selected
+            const checkboxes = document.querySelectorAll('input[name="absenceType"]:checked');
+            if (checkboxes.length === 0) {
+                alert("Please select at least one type of absence request.");
+                event.preventDefault(); // Stop form submission
+            }
+        });
+    </script>
+</body>
+</html>

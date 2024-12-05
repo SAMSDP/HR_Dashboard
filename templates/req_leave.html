@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Leave Form</title>
+  <style>
+    body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+  }
+  
+  .container {
+    max-width: 600px;
+    margin: 50px auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  }
+  
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+  }
+  
+  .form-group {
+    margin-bottom: 15px;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+    color: #555;
+  }
+  
+  input,
+  select,
+  textarea {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  textarea {
+    resize: vertical;
+  }
+  
+  button.submit-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    color: #fff;
+    background-color: #007bff;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+  
+  button.submit-btn:hover {
+    background-color: #0056b3;
+  }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Employee Leave Request Form</h1>
+    <form action="{{ url_for('submit_leave') }}" method="post">
+      <div class="form-group">
+        <label for="employeeName">Employee Name</label>
+        <input type="text" id="employee_name" name="employee_name" placeholder="Enter your full name" required>
+      </div>
+
+      <div class="form-group">
+        <label for="department">Department</label>
+        <select id="department" name="department" required>
+          <option value="">Select Department</option>
+          <option value="HR">HR</option>
+          <option value="Finance">Finance</option>
+          <option value="IT">IT</option>
+          <option value="Marketing">Marketing</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="designation">Designation</label>
+        <select id="designation" name="designation" required>
+          <option value="">Select Designation</option>
+          <option value="HR Manager">HR Manager</option>
+          <option value="Team Lead">Team Lead</option>
+          <option value="Project Manager">Project Manager</option>
+          <option value="Data Analyst">Data Analyst</option>
+          <option value="Marketing Specialist">Marketing Specialist</option>
+          <option value="Developer">Developer</option>
+          <option value="Intern">Intern</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="leaveType">Leave Type</label>
+        <select id="leave_type" name="leave_type" required>
+          <option value="">Select Leave Type</option>
+          <option value="Casual Leave">Casual Leave</option>
+          <option value="Sick Leave">Sick Leave</option>
+          <option value="Earned Leave">Earned Leave</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="startDate">Start Date</label>
+        <input type="date" id="start_date" name="start_date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="endDate">End Date</label>
+        <input type="date" id="end_date" name="end_date" required>
+      </div>
+
+      <div class="form-group">
+        <label for="reason">Reason for Leave</label>
+        <textarea id="reason" name="reason" placeholder="Provide a brief reason for leave" rows="4" required></textarea>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit</button>
+    </form>
+  </div>
+  <script>
+    document.getElementById('leaveForm').addEventListener('submit', function(event) {
+    event.preventDefault(); // Prevent form submission
+  
+    const employeeName = document.getElementById('employeeName').value.trim();
+    const department = document.getElementById('department').value;
+    const designation = document.getElementById('designation').value;
+    const leaveType = document.getElementById('leaveType').value;
+    const startDate = document.getElementById('startDate').value;
+    const endDate = document.getElementById('endDate').value;
+    const reason = document.getElementById('reason').value.trim();
+  
+    if (!employeeName || !department || !designation || !leaveType || !startDate || !endDate || !reason) {
+      alert('Please fill out all fields.');
+      return;
+    }
+  
+    if (new Date(startDate) > new Date(endDate)) {
+      alert('End date cannot be earlier than start date.');
+      return;
+    }
+  
+    // Simulate form submission
+    alert('Leave request submitted successfully!');
+    this.reset(); // Reset form
+  });
+  </script>
+</body>
+</html>

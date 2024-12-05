@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, jsonify
+from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
 import mysql.connector
 from datetime import datetime, timedelta
 
@@ -479,6 +479,172 @@ def update_request_status(req_type, emp_id, action):
     conn.close()
 
 
+@app.route("/register")
+def register():
+    """Render the employee registration form."""
+    return render_template("emp_register.html")
+
+
+@app.route("/submit", methods=["POST"])
+def submit_registration():
+    """Handle employee registration form submission."""
+    try:
+        # Fetch form data
+        form_data = {
+            "first_name": request.form["firstName"],
+            "middle_name": request.form.get("middleName", ""),  # Optional
+            "last_name": request.form["lastName"],
+            "dob": request.form["dob"],
+            "age": request.form["age"],
+            "gender": request.form["gender"],
+            "mobile": request.form["mobile"],
+            "email": request.form["email"],
+            "emergency_contact": request.form.get("emergencyContact", ""),  # Optional
+            "area": request.form["area"],
+            "street": request.form["street"],
+            "city": request.form["city"],
+            "district": request.form["district"],
+            "state": request.form["state"],
+            "country": request.form["country"],
+            "pincode": request.form["pincode"],
+            "permanent_address": request.form["permanentAddress"],
+            "employee_id": request.form["employeeId"],
+            "designation": request.form["designation"],
+            "department": request.form["department"],
+            "status": request.form["status"],
+            "working_format": request.form["working_format"],
+            "account_number": request.form["accountNumber"],
+            "bank_name": request.form["bankName"],
+            "ifsc_code": request.form["ifscCode"],
+            "pan_number": request.form["panNumber"],
+        }
+
+        # Establish a database connection
+        conn = get_db_connection()
+        if conn is None:
+            flash('Failed to connect to the database. Please try again later.', 'danger')
+            return redirect(url_for('register'))
+
+        cursor = conn.cursor()
+
+        # SQL query for inserting data
+        query = """
+            INSERT INTO employees (
+                first_name, middle_name, last_name, dob, age, gender, mobile, email, emergency_contact,
+                area, street, city, district, state, country, pincode, permanent_address, employee_id,
+                designation, department, status, working_format, account_number, bank_name, ifsc_code, pan_number
+            )
+            VALUES (%(first_name)s, %(middle_name)s, %(last_name)s, %(dob)s, %(age)s, %(gender)s, %(mobile)s,
+                    %(email)s, %(emergency_contact)s, %(area)s, %(street)s, %(city)s, %(district)s,
+                    %(state)s, %(country)s, %(pincode)s, %(permanent_address)s, %(employee_id)s,
+                    %(designation)s, %(department)s, %(status)s, %(working_format)s, %(account_number)s, %(bank_name)s, %(ifsc_code)s,
+                    %(pan_number)s)
+        """
+
+        cursor.execute(query, form_data)
+        conn.commit()
+        flash("Employee registration successful!", "success")
+
+    except mysql.connector.Error as e:
+        flash(f"Database error: {e}", "danger")
+        print(f"Database error: {e}")
+
+    except Exception as e:
+        flash(f"Unexpected error: {e}", "danger")
+        print(f"Unexpected error: {e}")
+
+    finally:
+        if "cursor" in locals() and cursor:
+            cursor.close()
+        if "conn" in locals() and conn:
+            conn.close()
+
+    # Redirect to the registration page with a flash message
+    return redirect(url_for('register'))
+
+@app.route('/leave')
+def leave_form():
+    return render_template('req_leave.html')
+
+
+# Route for handling form submission
+@app.route('/submit-leave', methods=['POST'])
+def submit_leave():
+    if request.method == 'POST':
+        # Get form data
+        employee_name = request.form['employee_name']
+        department = request.form['department']
+        designation = request.form['designation']
+        leave_type = request.form['leave_type']
+        start_date = request.form['start_date']
+        end_date = request.form['end_date']
+        reason = request.form['reason']
+        print(employee_name)
+
+        # Database operation
+        conn = get_db_connection()
+        if conn is None:
+            flash('Failed to connect to the database. Please try again later.')
+            return redirect(url_for('leave_form'))
+
+        try:
+            cursor = conn.cursor()
+
+            # Insert data into the SQL table
+            query = """
+            INSERT INTO leave_applications (employee_name, department, designation, leave_type, start_date, end_date, reason)
+            VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """
+            values = (employee_name, department, designation, leave_type, start_date, end_date, reason)
+            cursor.execute(query, values)
+            conn.commit()
+
+            flash('Leave application submitted successfully!')
+        except mysql.connector.Error as err:
+            print(f"SQL error: {err}")
+            flash('An error occurred while submitting your application. Please try again.')
+        finally:
+            cursor.close()
+            conn.close()
+
+        return redirect(url_for('leave_form'))
+    
+
+@app.route('/permission')
+def permission_form():
+    return render_template('req_permission.html')  # Ensure 'index.html' matches your HTML file name
+
+
+@app.route('/submit-permission', methods=['POST'])
+def submit_permision():
+    # Get form data
+    first_name = request.form['firstName']
+    last_name = request.form['lastName']
+    employee_id = request.form['employeeID']
+    department = request.form['department']
+    absence_types = ', '.join(request.form.getlist('absenceType'))
+    reason = request.form['reason']
+    absence_from = request.form['absenceFrom']
+    absence_to = request.form['absenceTo']
+    total_hours = request.form['totalHours']
+
+    # Store data in MySQL
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        query = """
+            INSERT INTO permission (first_name, last_name, employee_id, department, absence_types, reason, absence_from, absence_to, total_hours)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)
+        """
+        cursor.execute(query, (first_name, last_name, employee_id, department, absence_types, reason, absence_from, absence_to, total_hours))
+        conn.commit()
+        cursor.close()
+        conn.close()
+        return redirect('/permission')  # Redirect to the form after submission
+    except Exception as e:
+        return jsonify({'error': str(e)})
+
+
 @app.route('/emp-list')
 def emp_list():
     page = int(request.args.get('page', 1))
@@ -487,13 +653,15 @@ def emp_list():
     domains = get_domains()
     leave_requests = get_leave_requests()
     permission_requests = get_permission_requests()
+
+
     return render_template(
         "emp_list.html",
         employees=employees,
         domains=domains,
         page=page,
         leave_requests=leave_requests,
-        permission_requests=permission_requests
+        permission_requests=permission_requests,
     )
 
 @app.route('/get-request-details', methods=['GET'])
@@ -838,6 +1006,39 @@ def get_data():
     print(chart_data)
 
     return jsonify(chart_data)
+
+@app.route('/get-employee')
+def get_employee():
+    try:
+        connection = get_db_connection()
+        cursor = connection.cursor()
+
+        cursor.execute("SELECT role, gender FROM rolewise ORDER BY role")
+        result = cursor.fetchall()
+        connection.close()
+
+        employees_by_role = {}
+        for role, gender in result:
+            if role not in employees_by_role:
+                employees_by_role[role] = {'male': 0, 'female': 0, 'total': 0}
+            
+            if gender == 'Male':
+                employees_by_role[role]['male'] += 1
+            elif gender == 'Female':
+                employees_by_role[role]['female'] += 1
+            
+            employees_by_role[role]['total'] += 1
+
+        for role, counts in employees_by_role.items():
+            male_percentage = (counts['male'] / counts['total']) * 100 if counts['total'] > 0 else 0
+            female_percentage = (counts['female'] / counts['total']) * 100 if counts['total'] > 0 else 0
+            counts['male_percentage'] = round(male_percentage, 2)
+            counts['female_percentage'] = round(female_percentage, 2)
+
+        return jsonify(employees_by_role)
+
+    except Exception as e:
+        return jsonify({"error": str(e)})
 
 # -------------------- Main Runner --------------------
 if __name__ == "__main__":

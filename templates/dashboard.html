@@ -103,9 +103,9 @@
         </div>
 
         <!-- Role Wise Count (Multi-Row Card) -->
-        <div id="multirow-card">
-            <h3>Role Wise Employee Count</h3>
-            <div id="roleCardsContainer"></div>
+        <h1>Role-wise Employees</h1>
+        <div class="chart-containar" id="chart-containar">
+            <!-- Columns will be dynamically generated here -->
         </div>
 
         <!-- Stacked Column Chart -->
@@ -826,6 +826,76 @@ document.addEventListener("DOMContentLoaded", function () {
             });
         });
 });
+
+
+fetch('/get-employee')
+    .then(response => response.json())
+    .then(data => {
+        const chartContainer = document.getElementById('chart-containar');
+
+        // Create two columns
+        const firstColumn = document.createElement('div');
+        firstColumn.classList.add('column');
+        chartContainer.appendChild(firstColumn);
+
+        const secondColumn = document.createElement('div');
+        secondColumn.classList.add('column');
+        chartContainer.appendChild(secondColumn);
+
+        let count = 0;
+
+        // Add roles to respective columns
+        for (const [role, counts] of Object.entries(data)) {
+            const { male_percentage, female_percentage } = counts;
+
+            const roleGroup = document.createElement('div');
+            roleGroup.classList.add('role-group');
+
+            const roleHeading = document.createElement('div');
+            roleHeading.classList.add('role-heading');
+            roleHeading.textContent = `${role}`;
+            roleGroup.appendChild(roleHeading);
+
+            createBar(roleGroup, 'Male', male_percentage);
+            createBar(roleGroup, 'Female', female_percentage);
+
+            if (count < 3) {
+                firstColumn.appendChild(roleGroup);
+            } else {
+                secondColumn.appendChild(roleGroup);
+            }
+
+            count++;
+        }
+    })
+    .catch(error => console.error('Error fetching employee:', error));
+
+function createBar(container, gender, percentage) {
+    const bar = document.createElement('div');
+    bar.classList.add('bar');
+
+    const label = document.createElement('div');
+    label.classList.add('label');
+    label.textContent = gender;
+    bar.appendChild(label);
+
+    const progress = document.createElement('div');
+    progress.classList.add('progress');
+
+    const fill = document.createElement('div');
+    fill.classList.add('fill');
+    fill.style.setProperty('--width', `${percentage}%`);
+    fill.style.width = `${percentage}%`;
+    progress.appendChild(fill);
+    bar.appendChild(progress);
+
+    const percentageText = document.createElement('div');
+    percentageText.classList.add('percentage');
+    percentageText.textContent = `${percentage}%`;
+    bar.appendChild(percentageText);
+
+    container.appendChild(bar);
+}
 
 
     </script>
